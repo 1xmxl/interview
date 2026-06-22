@@ -1,0 +1,18 @@
+server:
+  port: 8081
+tj:
+  secret: 1oEYCJ7RWcj9ygfsVfw8L8MUj94aLtKZxqd3aB2x6Yg
+spring:
+  profiles:
+    active: local
+  application:
+    name: auth-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.150.101:8848
+#  security:
+#    enabled: false
+#    user:
+#      name: admin
+#      password: admin123

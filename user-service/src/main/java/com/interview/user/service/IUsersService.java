@@ -1,5 +1,9 @@
 package com.interview.user.service;
 
+import com.interview.DTO.LoginRequest;
+import com.interview.DTO.LoginResponse;
+import com.interview.DTO.UserDTO;
+import com.interview.DTO.UsersDTO;
 import com.interview.user.domain.po.Users;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -13,4 +17,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IUsersService extends IService<Users> {
 
+
+    UsersDTO getUsers(String username, String password);
+
+    void updateUsers(UserDTO usersDTO);
 }

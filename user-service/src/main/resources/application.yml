@@ -8,6 +8,7 @@ spring:
   application:
     name: user-service
 tj:
+  secret: 1oEYCJ7RWcj9ygfsVfw8L8MUj94aLtKZxqd3aB2x6Yg
   swagger:
     enable: true
     enableResponseWrap: true
@@ -24,4 +25,4 @@ tj:
         - /users/ids
         - /users/me
   jdbc:
-    database: user-db
+    database: user_db

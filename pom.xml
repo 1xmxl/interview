@@ -16,6 +16,10 @@
         <module>ai-evaluation-service</module>
         <module>feedback-analysis-servic</module>
         <module>user-growth-service</module>
+        <module>common-service</module>
+        <module>auth-service</module>
+        <module>api</module>
+        <module>gateway-service</module>
     </modules>
 
     <properties>
