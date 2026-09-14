@@ -1,0 +1,31 @@
+# 本地开发配置模板
+# 用法：复制本文件为 application-local.yml，填入真实值后即可本地启动
+# 注意：application-local.yml 已在 .gitignore 中，不会上传到仓库
+
+spring:
+  aliyun:
+    oss:
+      endpoint: oss-cn-chengdu.aliyuncs.com
+      access-key-id: <你的 OSS AccessKeyId>
+      access-key-secret: <你的 OSS AccessKeySecret>
+      bucket-name: lxmxl
+  cloud:
+    nacos:
+      server-addr: 192.168.150.101:8848 # nacos注册中心
+      username: nacos
+      password: nacos
+      discovery:
+        namespace: f923fb34-cb0a-4c06-8fca-ad61ea61a3f0
+        group: DEFAULT_GROUP
+        ip: 192.168.150.1
+  config:
+    import:
+#      - nacos:${spring.application.name}.yaml # 导入本服务的配置
+      - nacos:shared-spring.yaml # 共享spring配置
+      - nacos:shared-redis.yaml # 共享redis配置
+      - nacos:shared-mybatis.yaml # 共享mybatis配置
+      - nacos:shared-logs.yaml # 共享日志配置
+      - nacos:shared-feign.yaml # 共享feign配置
+logging:
+  level:
+    com.tianji: debug

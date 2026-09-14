@@ -1,0 +1,28 @@
+server:
+  port: 8072  #端口
+  tomcat:
+    uri-encoding: UTF-8   #服务编码
+spring:
+  rabbitmq:
+    host: 192.168.150.101
+    port: 5672
+    username: tjxt
+    password: 123321
+    virtual-host: /
+  profiles:
+    active: local
+  application:
+    name: interview-session-service
+tj:
+  secret: 1oEYCJ7RWcj9ygfsVfw8L8MUj94aLtKZxqd3aB2x6Yg
+  swagger:
+    enable: true
+    enableResponseWrap: true
+    package-path: com.interview.controller
+  auth:
+    resource:
+      enable: false
+      excludeLoginPaths:
+
+  jdbc:
+    database: session_db

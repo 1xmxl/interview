@@ -9,6 +9,7 @@ import com.interview.DTO.UserDTO;
 import com.interview.DTO.UsersDTO;
 import com.interview.context.UserContext;
 import com.interview.user.domain.po.Users;
+import com.interview.user.domain.vo.UserVO;
 import com.interview.user.service.IUsersService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,13 +46,16 @@ public class UsersController {
         users.setUpdatedAt(LocalDateTime.now());
         usersService.save(users);
     }
-    @GetMapping("/me")
-    public Users getUsers() {
-        String userId = UserContext.getUserId();
-        return usersService.getById(userId);
-    }
+
     @PutMapping("/me")
     public void updateUsers(@RequestBody UserDTO usersDTO) {
         usersService.updateUsers(usersDTO);
+    }
+
+    @GetMapping("/users/me/profile")
+    public UserVO getMyProfile() {
+        Long userId = Long.parseLong(UserContext.getUserId()); // 从 token 解析出用户
+        Users byId = usersService.getById(userId);
+        return BeanUtil.copyProperties(byId, UserVO.class);
     }
 }

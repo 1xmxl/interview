@@ -5,19 +5,14 @@ import com.interview.DTO.LoginResponse;
 import client.UserClient;
 import com.interview.DTO.UserDTO;
 import com.interview.DTO.UsersDTO;
+import org.springframework.cloud.openfeign.FallbackFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserClientFallback implements UserClient {
-
+public class UserClientFallback implements FallbackFactory<UserClient> {
 
     @Override
-    public UsersDTO getUsers(String username,String password) {
+    public UserClient create(Throwable cause) {
         return null;
-    }
-
-    @Override
-    public void saveNewUsers(UserDTO usersDTO) {
-
     }
 }

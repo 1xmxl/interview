@@ -47,6 +47,8 @@ public class AuthGlobalFilter implements GlobalFilter , Ordered {
         }
         String userId = jwtUtil.getUserIdFromToken(token);
         String username = jwtUtil.getUsernameFromToken(token);
+        System.out.println("网关解析到的 userId: " + userId);
+
         ServerHttpRequest build = request.mutate().header("X-User-Id", userId)
                 .header("X-Username", username)
                 .build();

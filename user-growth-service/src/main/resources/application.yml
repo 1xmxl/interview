@@ -1,0 +1,22 @@
+server:
+  port: 8073  #端口
+  tomcat:
+    uri-encoding: UTF-8   #服务编码
+spring:
+  profiles:
+    active: local
+  application:
+    name: user-growth-service
+tj:
+  secret: 1oEYCJ7RWcj9ygfsVfw8L8MUj94aLtKZxqd3aB2x6Yg
+  swagger:
+    enable: true
+    enableResponseWrap: true
+    package-path: com.interview.controller
+  auth:
+    resource:
+      enable: false
+      excludeLoginPaths:
+
+  jdbc:
+    database: growth_db

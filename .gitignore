@@ -36,3 +36,11 @@ build/
 
 ### Mac OS ###
 .DS_Store
+### 运行日志 ###
+logs/
+
+### mvn 依赖树临时输出 ###
+deps.txt
+
+### 本地配置（含密钥，不上传）###
+**/application-local.yml

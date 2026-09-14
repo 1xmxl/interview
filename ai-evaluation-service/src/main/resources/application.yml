@@ -1,0 +1,52 @@
+server:
+  port: 8095  #端口
+  tomcat:
+    uri-encoding: UTF-8   #服务编码
+tj:
+  secret: 1oEYCJ7RWcj9ygfsVfw8L8MUj94aLtKZxqd3aB2x6Yg
+spring:
+  rabbitmq:
+    host: 192.168.150.101
+    port: 5672
+    username: tjxt     # 默认用户名（如果没改）
+    password: 123321      # 默认密码（如果没改）
+    virtual-host: /      # 默认 vhost（可选）
+  aliyun:
+    oss:
+      endpoint: oss-cn-chengdu.aliyuncs.com
+      access-key-id: ${OSS_ACCESS_KEY_ID:}
+      access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
+      bucket-name: lxmxl
+  profiles:
+    active: local
+  application:
+    name: ai-evaluation-service
+  main:
+    allow-circular-references: true # 允许循环引用
+  auth:
+    resource:
+      enable: true
+  jdbc:
+    database: evaluation_db #指定使用的数据库名
+  ai:
+    chat-type: ENHANCE
+    prompt:
+      system:
+        chat:
+          data-id: system-chat-message.txt
+          group: DEFAULT_GROUP
+          timeout-ms: 20000
+        contentGet:
+          data-id: Tilte-aiprompt.txt
+          group: DEFAULT_GROUP
+          timeout-ms: 20000
+      chatTitle:
+        prompt:
+          description: |
+            你是一个智能助手，请根据对话生成标题。
+            要求：
+            - 不超过20字
+            - 无标点
+    user-id: 9999
+    memory:
+      max: 100
