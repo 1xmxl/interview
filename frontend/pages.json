@@ -1,0 +1,37 @@
+{
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^uni-(.*)": "@/components/uni-$1/uni-$1.vue"
+    }
+  },
+  "pages": [
+    { "path": "pages/login/login", "style": { "navigationBarTitleText": "登录", "navigationStyle": "custom" } },
+    { "path": "pages/register/register", "style": { "navigationBarTitleText": "注册", "navigationStyle": "custom" } },
+    { "path": "pages/index/index", "style": { "navigationBarTitleText": "AI面试助手", "navigationStyle": "custom" } },
+    { "path": "pages/user/profile", "style": { "navigationBarTitleText": "个人资料", "navigationStyle": "custom" } },
+    { "path": "pages/resume/list", "style": { "navigationBarTitleText": "我的简历", "navigationStyle": "custom" } },
+    { "path": "pages/resume/detail", "style": { "navigationBarTitleText": "简历详情", "navigationStyle": "custom" } },
+    { "path": "pages/interview/config-list", "style": { "navigationBarTitleText": "面试配置", "navigationStyle": "custom" } },
+    { "path": "pages/interview/config-form", "style": { "navigationBarTitleText": "编辑配置", "navigationStyle": "custom" } },
+    { "path": "pages/interview/session-create", "style": { "navigationBarTitleText": "创建面试", "navigationStyle": "custom" } },
+    { "path": "pages/interview/session-room", "style": { "navigationBarTitleText": "面试中", "navigationStyle": "custom" } },
+    { "path": "pages/interview/session-history", "style": { "navigationBarTitleText": "面试记录", "navigationStyle": "custom" } },
+    { "path": "pages/evaluation/result", "style": { "navigationBarTitleText": "评估结果", "navigationStyle": "custom" } },
+    { "path": "pages/evaluation/answer-detail", "style": { "navigationBarTitleText": "答题详情", "navigationStyle": "custom" } },
+    { "path": "pages/feedback/speech", "style": { "navigationBarTitleText": "语音分析", "navigationStyle": "custom" } },
+    { "path": "pages/feedback/analytics", "style": { "navigationBarTitleText": "语音统计", "navigationStyle": "custom" } },
+    { "path": "pages/growth/skills", "style": { "navigationBarTitleText": "技能评分", "navigationStyle": "custom" } },
+    { "path": "pages/growth/skill-history", "style": { "navigationBarTitleText": "技能趋势", "navigationStyle": "custom" } },
+    { "path": "pages/growth/report-list", "style": { "navigationBarTitleText": "成长报告", "navigationStyle": "custom" } },
+    { "path": "pages/growth/report-detail", "style": { "navigationBarTitleText": "报告详情", "navigationStyle": "custom" } },
+    { "path": "pages/growth/weaknesses", "style": { "navigationBarTitleText": "薄弱点提升", "navigationStyle": "custom" } }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "AI面试助手",
+    "navigationBarBackgroundColor": "rgba(255,255,255,0.8)",
+    "backgroundColor": "#f0f4ff",
+    "rpxCalcMaxDeviceWidth": 750
+  }
+}

@@ -1,0 +1,105 @@
+<script setup lang="uts">
+	// #ifdef APP-ANDROID || APP-HARMONY
+	let firstBackTime = 0
+	// #endif
+
+	onLaunch(() => {
+		console.log('App Launch')
+	})
+
+	onAppShow(() => {
+		console.log('App Show')
+	})
+
+	onAppHide(() => {
+		console.log('App Hide')
+	})
+
+	// #ifdef APP-ANDROID || APP-HARMONY
+	onLastPageBackPress(() => {
+		console.log('App LastPageBackPress')
+		if (firstBackTime == 0) {
+			uni.showToast({
+				title: '再按一次退出应用',
+				position: 'bottom',
+			})
+			firstBackTime = Date.now()
+			setTimeout(() => {
+				firstBackTime = 0
+			}, 2000)
+		} else if (Date.now() - firstBackTime < 2000) {
+			firstBackTime = Date.now()
+			uni.exit()
+		}
+	})
+
+	onExit(() => {
+		console.log('App Exit')
+	})
+	// #endif
+</script>
+
+<style>
+/* ===== 全局基础 ===== */
+html, body {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	min-height: 100vh;
+}
+
+/* ===== 页面背景 ===== */
+page {
+	/* 默认使用干净的浅灰背景（桌面端） */
+	background: #f5f6fa;
+	min-height: 100vh;
+	position: relative;
+	overflow-x: hidden;
+}
+
+/* 移动端使用更柔和的微渐变 */
+/* #ifdef APP-PLUS */
+page {
+	background: linear-gradient(170deg, #f5f6fa 0%, #f0eef8 50%, #f5f0f6 100%);
+}
+/* #endif */
+
+/* #ifdef H5 */
+@media (max-width: 767px) {
+	page {
+		background: linear-gradient(170deg, #f5f6fa 0%, #f0eef8 50%, #f5f0f6 100%);
+	}
+}
+/* #endif */
+
+/* 移除彩虹光斑伪元素，改为极淡的装饰 */
+page::before {
+	content: '';
+	position: fixed;
+	top: -150px;
+	right: -100px;
+	width: 420px;
+	height: 420px;
+	background: radial-gradient(circle, rgba(124, 92, 252, 0.04) 0%, transparent 70%);
+	border-radius: 50%;
+	pointer-events: none;
+	z-index: 0;
+}
+
+page::after {
+	content: '';
+	position: fixed;
+	bottom: -150px;
+	left: -100px;
+	width: 380px;
+	height: 380px;
+	background: radial-gradient(circle, rgba(79, 172, 254, 0.03) 0%, transparent 70%);
+	border-radius: 50%;
+	pointer-events: none;
+	z-index: 0;
+}
+</style>
+<style>
+	.uni-row { flex-direction: row; }
+	.uni-column { flex-direction: column; }
+</style>
