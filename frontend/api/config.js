@@ -1,7 +1,5 @@
-
-const SERVER_IP = '10.19.80.28'; // 你电脑当前的局域网 IP（手机热点）
-
+const BASE_URL = 'http://localhost:10010';  // 只到域名+端口，不加任何后缀
 export default {
-    baseURL: 'http://' + SERVER_IP + ':10010',
-    wsURL: 'ws://' + SERVER_IP + ':8080/ws',
+  baseURL: BASE_URL,
+  wsURL: 'ws://localhost:8080/ws', // WebSocket 也相应调整
 };
