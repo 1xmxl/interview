@@ -79,4 +79,9 @@ public class ResumesController {
         log.info("start get experiences data");
         return resumesService.getExperiences(resumeId);
     }
+    @PostMapping("/{resumeId}/reparse")
+    public void reparse(@PathVariable("resumeId") Long resumeId){
+        log.info("start reparse resume, resumeId={}", resumeId);
+        resumesService.reparse(resumeId);
+    }
 }

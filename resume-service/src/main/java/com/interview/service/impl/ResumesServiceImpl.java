@@ -151,6 +151,29 @@ public class ResumesServiceImpl extends ServiceImpl<ResumesMapper, Resumes> impl
         return iResumeExperiencesService.getListById(resumeId);
     }
 
+    @Override
+    public void reparse(Long resumeId) {
+        Long userId = Long.valueOf(UserContext.getUserId());
+        Resumes resume = lambdaQuery()
+                .eq(Resumes::getId, resumeId)
+                .eq(Resumes::getUserId, userId)
+                .one();
+        if (resume == null) {
+            throw new RuntimeException("简历不存在或无权限操作");
+        }
+        // 清掉旧的结构化数据，重新走解析链路
+        deleteRelationData(resumeId);
+        lambdaUpdate()
+                .eq(Resumes::getId, resumeId)
+                .set(Resumes::getStatus, "PENDING")
+                .set(Resumes::getParsedText, null)
+                .update();
+        ResumeParseMessage message = new ResumeParseMessage(resumeId, userId, resume.getFilePath());
+        rabbitTemplate.convertAndSend(RabbitMQConstant.Exchange.RESUME_EXCHANGE,
+                RabbitMQConstant.Key.RESUME_PARSE_LEY, message);
+        log.info("已重新发起简历解析, resumeId={}", resumeId);
+    }
+
     private void deleteRelationData(Long resumeId) {
         iResumeEducationsService.deleteAllById(resumeId);
         iResumeSkillsService.deleteAllById(resumeId);

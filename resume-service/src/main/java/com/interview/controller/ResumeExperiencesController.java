@@ -27,13 +27,13 @@ public class ResumeExperiencesController {
 
     /** 按简历 ID 查询工作经历列表 */
     @GetMapping("/list")
-    public List<ResumeExperiences> listByResume(@RequestParam Long resumeId) {
+    public List<ResumeExperiences> listByResume(@RequestParam("resumeId") Long resumeId) {
         log.info("查询简历工作经历列表, resumeId={}", resumeId);
         return resumeExperiencesService.lambdaQuery().eq(ResumeExperiences::getResumeId, resumeId).list();
     }
 
     @GetMapping("/{id}")
-    public ResumeExperiences getById(@PathVariable Long id) {
+    public ResumeExperiences getById(@PathVariable("id") Long id) {
         log.info("查询工作经历详情, id={}", id);
         return resumeExperiencesService.getById(id);
     }
@@ -45,14 +45,14 @@ public class ResumeExperiencesController {
     }
 
     @PutMapping("/{id}")
-    public void update(@PathVariable Long id, @RequestBody ResumeExperiences resumeExperiences) {
+    public void update(@PathVariable("id") Long id, @RequestBody ResumeExperiences resumeExperiences) {
         log.info("更新工作经历, id={}", id);
         resumeExperiences.setId(id);
         resumeExperiencesService.updateById(resumeExperiences);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public void delete(@PathVariable("id") Long id) {
         log.info("删除工作经历, id={}", id);
         resumeExperiencesService.removeById(id);
     }

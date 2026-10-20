@@ -39,4 +39,6 @@ public interface IResumesService extends IService<Resumes> {
     List<ResumeSkills> getSkills(Long resumeId);
 
     List<ResumeExperiences> getExperiences(Long resumeId);
+
+    void reparse(Long resumeId);
 }
