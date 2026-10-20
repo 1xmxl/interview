@@ -1,10 +1,12 @@
 package com.interview;
 
+import client.config.FeignConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.core.env.Environment;
 
 import java.net.InetAddress;
@@ -13,6 +15,7 @@ import java.net.UnknownHostException;
 @MapperScan("com.interview.mapper")
 @Slf4j
 @SpringBootApplication()
+@EnableFeignClients(basePackages = "client", defaultConfiguration = FeignConfig.class)
 public class SessionApplication {
     public static void main(String[] args) throws UnknownHostException {
         SpringApplication app = new SpringApplicationBuilder(SessionApplication.class).build(args);

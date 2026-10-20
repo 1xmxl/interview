@@ -27,7 +27,7 @@ public class SessionQuestionsController {
 
     /** 按会话 ID 查询题目列表（按题目顺序排序） */
     @GetMapping("/list")
-    public List<SessionQuestions> listBySession(@RequestParam Long sessionId) {
+    public List<SessionQuestions> listBySession(@RequestParam("sessionId") Long sessionId) {
         log.info("查询会话题目列表, sessionId={}", sessionId);
         return sessionQuestionsService.lambdaQuery()
                 .eq(SessionQuestions::getSessionId, sessionId)
@@ -36,7 +36,7 @@ public class SessionQuestionsController {
     }
 
     @GetMapping("/{id}")
-    public SessionQuestions getById(@PathVariable Long id) {
+    public SessionQuestions getById(@PathVariable("id") Long id) {
         log.info("查询题目详情, id={}", id);
         return sessionQuestionsService.getById(id);
     }
@@ -48,14 +48,14 @@ public class SessionQuestionsController {
     }
 
     @PutMapping("/{id}")
-    public void update(@PathVariable Long id, @RequestBody SessionQuestions sessionQuestions) {
+    public void update(@PathVariable("id") Long id, @RequestBody SessionQuestions sessionQuestions) {
         log.info("更新题目, id={}", id);
         sessionQuestions.setId(id);
         sessionQuestionsService.updateById(sessionQuestions);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public void delete(@PathVariable("id") Long id) {
         log.info("删除题目, id={}", id);
         sessionQuestionsService.removeById(id);
     }

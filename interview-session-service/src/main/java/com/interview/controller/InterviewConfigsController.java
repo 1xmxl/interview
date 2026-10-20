@@ -38,19 +38,19 @@ public class InterviewConfigsController {
     }
 
     @GetMapping("/configs/{id}")
-    public InterviewConfigs getConfig(@PathVariable Long id) {
+    public InterviewConfigs getConfig(@PathVariable("id") Long id) {
         log.info("获取面试配置详情, id={}", id);
         return interviewConfigsService.getConfig(id);
     }
 
     @PutMapping("/configs/{id}")
-    public void updateConfig(@PathVariable Long id, @RequestBody ConfigSubbmit configSubbmit) {
+    public void updateConfig(@PathVariable("id") Long id, @RequestBody ConfigSubbmit configSubbmit) {
         log.info("更新面试配置, id={}", id);
         interviewConfigsService.updateConfig(id, configSubbmit);
     }
 
     @DeleteMapping("/configs/{id}")
-    public void deleteConfig(@PathVariable Long id) {
+    public void deleteConfig(@PathVariable("id") Long id) {
         log.info("删除面试配置, id={}", id);
         interviewConfigsService.deleteConfig(id);
     }
