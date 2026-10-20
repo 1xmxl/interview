@@ -13,4 +13,7 @@ public interface IEvaluationService {
 
     /** 单题评估详情 */
     AnswerEvaluations getAnswerDetail(Long sessionId, Long answerId);
+
+    /** 生成 / 重新生成综合报告（入库 + Feign 回写） */
+    void generateReport(Long sessionId, Long userId);
 }

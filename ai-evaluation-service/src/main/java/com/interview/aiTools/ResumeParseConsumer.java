@@ -95,7 +95,7 @@ public class ResumeParseConsumer {
                 .educations(educations)
                 .experiences(experiences)
                 .build();
-        ragService.addRAGData(resumeId, aiReturnInfo,userId);
+        ragService.addRAGData(resumeId, aiReturnInfo,userId);//你好
         resumeClient.updateStatus(resumeId, userId, dbmsData);
         log.info("简历解析并保存成功，resumeId={}", resumeId);
     }
