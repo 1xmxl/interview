@@ -1,7 +1,21 @@
-
-const SERVER_IP = '10.19.80.28'; // 你电脑当前的局域网 IP（手机热点）
+/**
+ * ⚠️⚠️ 后端服务器地址（必须填「你电脑」的 IP，不能是 localhost）
+ * ============================================================
+ * 别人在自己电脑上用 HBuilderX 运行前端时，请求必须发到「你的电脑」，
+ * 所以这里要填「你电脑的局域网 IP」。
+ *
+ * 【怎么查你电脑的 IP】
+ *   cmd 里运行：ipconfig
+ *   看「无线局域网适配器 WLAN」的 IPv4 地址，例如：
+ *   - 连手机热点时：安卓热点约 192.168.43.x，iPhone 热点约 172.20.10.x
+ *   - 连 WiFi 时：就是那个 WiFi 分配给你的地址
+ *
+ * 【你自己本机调试时】
+ *   把下面改成 'localhost' 即可。
+ */
+const SERVER_IP = 'localhost'; // TODO: 改成你电脑当前的局域网 IP
 
 export default {
-    baseURL: 'http://' + SERVER_IP + ':10010',
-    wsURL: 'ws://' + SERVER_IP + ':8080/ws',
+  baseURL: 'http://' + SERVER_IP + ':10010', // 只到域名+端口，不加任何后缀
+  wsURL: 'ws://' + SERVER_IP + ':10010/is/ws', // 网关 10010 + 前缀 /is + 会话服务 /ws
 };

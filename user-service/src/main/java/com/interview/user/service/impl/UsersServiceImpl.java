@@ -51,15 +51,17 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
 
     @Override
     public void updateUsers(UserDTO usersDTO) {
-        String hashpw = BCrypt.hashpw(usersDTO.getPasswordHash(), BCrypt.gensalt());
-        usersDTO.setPasswordHash(hashpw);
         String userId = UserContext.getUserId();
         String username = usersDTO.getUsername();
         String email = usersDTO.getEmail();
-        lambdaUpdate().eq(Users::getId, userId)
+        var updater = lambdaUpdate().eq(Users::getId, userId)
                 .set(Users::getUsername, username)
-                .set(Users::getEmail, email)
-                .set(Users::getPasswordHash, hashpw)
-                .update();
+                .set(Users::getEmail, email);
+        // 只有传了新密码才重新哈希，前端改资料可以不传密码
+        if (usersDTO.getPasswordHash() != null && !usersDTO.getPasswordHash().isBlank()) {
+            String hashpw = BCrypt.hashpw(usersDTO.getPasswordHash(), BCrypt.gensalt());
+            updater.set(Users::getPasswordHash, hashpw);
+        }
+        updater.update();
     }
 }

@@ -1,5 +1,6 @@
 package com.interview.service;
 
+import com.interview.DTO.GrowthStatsDTO;
 import com.interview.domain.po.GrowthReports;
 import com.interview.domain.vo.SkillHistoryVO;
 import com.interview.domain.vo.SkillScoreVO;
@@ -26,4 +27,7 @@ public interface IGrowthService {
 
     /** 薄弱点与提升建议（取最近得分低于 70 的技能，按分数升序取前 3） */
     List<WeaknessVO> getWeaknesses(Long userId);
+
+    /** 当前用户成长统计（技能维度数 + 报告数），供首页数据概览 */
+    GrowthStatsDTO getStats(Long userId);
 }

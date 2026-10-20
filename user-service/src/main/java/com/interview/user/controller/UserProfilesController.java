@@ -34,13 +34,13 @@ public class UserProfilesController {
 
     /** 按用户 ID 查询扩展资料 */
     @GetMapping("/list")
-    public UserProfiles getByUserId(@RequestParam Long userId) {
+    public UserProfiles getByUserId(@RequestParam("userId") Long userId) {
         log.info("查询用户扩展资料, userId={}", userId);
         return userProfilesService.getById(userId);
     }
 
     @GetMapping("/{userId}")
-    public UserProfiles getById(@PathVariable Long userId) {
+    public UserProfiles getById(@PathVariable("userId") Long userId) {
         log.info("查询用户扩展资料详情, userId={}", userId);
         return userProfilesService.getById(userId);
     }
@@ -52,14 +52,14 @@ public class UserProfilesController {
     }
 
     @PutMapping("/{userId}")
-    public void update(@PathVariable Long userId, @RequestBody UserProfiles userProfiles) {
+    public void update(@PathVariable("userId") Long userId, @RequestBody UserProfiles userProfiles) {
         log.info("更新用户扩展资料, userId={}", userId);
         userProfiles.setUserId(userId);
         userProfilesService.updateById(userProfiles);
     }
 
     @DeleteMapping("/{userId}")
-    public void delete(@PathVariable Long userId) {
+    public void delete(@PathVariable("userId") Long userId) {
         log.info("删除用户扩展资料, userId={}", userId);
         userProfilesService.removeById(userId);
     }

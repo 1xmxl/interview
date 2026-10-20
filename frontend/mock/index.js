@@ -29,13 +29,13 @@ export const USE_MOCK = {
   /* ===== 后端未实现 → mock ===== */
   getProfile: false,     // user-service 已实现资料接口 GET /users/users/me/profile
   updateProfile: false,  // user-service 已注册 UserInfoInterceptor，PUT /users/me 可用
-  reparse: true,        // 后端无 reparse 接口
-  sessionFlow: true,    // start/answer/end 未实现
-  history: true,        // getHistory 空壳（编译不过）
-  evaluation: true,     // ai-evaluation-service 无 controller
-  feedback: true,       // feedback-analysis-service 空壳
-  growth: true,         // user-growth-service 空壳
-  dashboard: true,      // 首页聚合为演示专用接口
+  reparse: false,       // resume-service 已实现 POST /resumes/{id}/reparse
+  sessionFlow: false,   // start/answer/end 已实现
+  history: false,       // getHistory 已实现
+  evaluation: false,    // ai-evaluation-service 已实现
+  feedback: false,      // feedback-analysis-service 已实现
+  growth: false,        // user-growth-service 已实现
+  dashboard: false,     // user-service 已实现 GET /users/me/stats 聚合
 };
 
 // 模拟网络延迟（毫秒），让 loading 状态可见、更接近真实体验

@@ -27,7 +27,8 @@
         </view>
       </view>
 
-      <EmptyState v-else icon="💬" title="暂无记录" description="完成面试后可查看问答历史" />
+      <EmptyState v-else icon="💬" :title="sessionId ? '暂无记录' : '未指定面试'"
+        :description="sessionId ? '完成面试后可查看问答历史' : '请从评估结果页进入面试记录'" />
     </view>
   </PageLayout>
 </template>
@@ -43,6 +44,11 @@ const loading = ref(true)
 onLoad((opt) => { sessionId = opt.sessionId || ''; loadData() })
 const loadData = async () => {
   loading.value = true
+  if (!sessionId) {
+    history.value = []
+    loading.value = false
+    return
+  }
   try { history.value = await interviewApi.getHistory(sessionId) || [] } catch (e) { history.value = [] } finally { loading.value = false }
 }
 const goResult = () => {

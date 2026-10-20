@@ -1,5 +1,6 @@
 package com.interview.controller;
 
+import com.interview.DTO.GrowthStatsDTO;
 import com.interview.context.UserContext;
 import com.interview.domain.po.GrowthReports;
 import com.interview.domain.vo.SkillHistoryVO;
@@ -62,7 +63,7 @@ public class GrowthController {
 
     /** 报告详情 */
     @GetMapping("/reports/{id}")
-    public GrowthReports getReport(@PathVariable Long id) {
+    public GrowthReports getReport(@PathVariable("id") Long id) {
         Long userId = currentUserId();
         if (userId == null) {
             return null;
@@ -80,6 +81,17 @@ public class GrowthController {
         }
         log.info("获取薄弱点列表, userId={}", userId);
         return growthService.getWeaknesses(userId);
+    }
+
+    /** 当前用户成长统计（首页数据概览） */
+    @GetMapping("/stats")
+    public GrowthStatsDTO getStats() {
+        Long userId = currentUserId();
+        if (userId == null) {
+            return GrowthStatsDTO.builder().skillCount(0).reportCount(0).build();
+        }
+        log.info("获取成长统计, userId={}", userId);
+        return growthService.getStats(userId);
     }
 
     /** 从请求上下文解析当前用户 ID（未认证返回 null） */

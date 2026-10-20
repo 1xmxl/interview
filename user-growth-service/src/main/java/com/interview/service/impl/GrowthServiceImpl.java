@@ -1,6 +1,7 @@
 package com.interview.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.interview.DTO.GrowthStatsDTO;
 import com.interview.domain.po.GrowthReports;
 import com.interview.domain.po.UserSkillProgress;
 import com.interview.domain.vo.SkillHistoryVO;
@@ -46,8 +47,10 @@ public class GrowthServiceImpl implements IGrowthService {
         }
         return latestBySkill.values().stream().map(p -> {
             SkillScoreVO vo = new SkillScoreVO();
+            vo.setName(p.getSkillName());
             vo.setSkillName(p.getSkillName());
             vo.setScore(p.getScore());
+            vo.setLevel(levelFor(p.getScore()));
             vo.setDimension(p.getDimension());
             vo.setRecordedAt(p.getRecordedAt());
             return vo;
@@ -97,13 +100,55 @@ public class GrowthServiceImpl implements IGrowthService {
                 .limit(WEAK_LIMIT)
                 .map(p -> {
                     WeaknessVO vo = new WeaknessVO();
+                    vo.setSkill(p.getSkillName());
                     vo.setSkillName(p.getSkillName());
                     vo.setScore(p.getScore());
+                    vo.setSeverity(severityFor(p.getScore()));
                     vo.setDimension(p.getDimension());
                     vo.setSuggestion(suggestionFor(p.getDimension()));
                     return vo;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public GrowthStatsDTO getStats(Long userId) {
+        List<UserSkillProgress> all = progressMapper.selectList(
+                new LambdaQueryWrapper<UserSkillProgress>()
+                        .eq(UserSkillProgress::getUserId, userId));
+        long distinctSkills = all.stream()
+                .map(UserSkillProgress::getSkillName)
+                .filter(Objects::nonNull)
+                .distinct()
+                .count();
+        Long reportCount = reportsMapper.selectCount(
+                new LambdaQueryWrapper<GrowthReports>()
+                        .eq(GrowthReports::getUserId, userId));
+        return GrowthStatsDTO.builder()
+                .skillCount((int) distinctSkills)
+                .reportCount(reportCount == null ? 0 : reportCount.intValue())
+                .build();
+    }
+
+    private String levelFor(BigDecimal score) {
+        if (score == null) {
+            return "BEGINNER";
+        }
+        double s = score.doubleValue();
+        if (s >= 85) return "EXPERT";
+        if (s >= 70) return "ADVANCED";
+        if (s >= 60) return "INTERMEDIATE";
+        return "BEGINNER";
+    }
+
+    private String severityFor(BigDecimal score) {
+        if (score == null) {
+            return "medium";
+        }
+        double s = score.doubleValue();
+        if (s < 55) return "high";
+        if (s < 70) return "medium";
+        return "low";
     }
 
     /** 查询当前用户全部技能记录，按时间倒序 */

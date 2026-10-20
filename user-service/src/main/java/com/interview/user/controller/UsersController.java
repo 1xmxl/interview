@@ -3,12 +3,17 @@ package com.interview.user.controller;
 
 
 import cn.hutool.core.bean.BeanUtil;
+import client.GrowthClient;
+import client.SessionClient;
+import com.interview.DTO.GrowthStatsDTO;
 import com.interview.DTO.LoginRequest;
 import com.interview.DTO.LoginResponse;
+import com.interview.DTO.SessionStatsDTO;
 import com.interview.DTO.UserDTO;
 import com.interview.DTO.UsersDTO;
 import com.interview.context.UserContext;
 import com.interview.user.domain.po.Users;
+import com.interview.user.domain.vo.UserStatsVO;
 import com.interview.user.domain.vo.UserVO;
 import com.interview.user.service.IUsersService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -32,6 +38,8 @@ import java.time.LocalDateTime;
 @Slf4j
 public class UsersController {
     private final IUsersService usersService;
+    private final SessionClient sessionClient;
+    private final GrowthClient growthClient;
 
     @GetMapping("/me")
     public UsersDTO getUsers(@RequestParam("username") String username,@RequestParam("password") String password) {
@@ -57,5 +65,31 @@ public class UsersController {
         Long userId = Long.parseLong(UserContext.getUserId()); // 从 token 解析出用户
         Users byId = usersService.getById(userId);
         return BeanUtil.copyProperties(byId, UserVO.class);
+    }
+
+    /** 首页数据概览：聚合面试统计 + 成长统计 */
+    @GetMapping("/me/stats")
+    public UserStatsVO getMyStats() {
+        log.info("获取首页数据概览, userId={}", UserContext.getUserId());
+        SessionStatsDTO sessionStats = null;
+        GrowthStatsDTO growthStats = null;
+        try {
+            sessionStats = sessionClient.getStats();
+        } catch (Exception e) {
+            log.warn("获取面试统计失败: {}", e.getMessage());
+        }
+        try {
+            growthStats = growthClient.getStats();
+        } catch (Exception e) {
+            log.warn("获取成长统计失败: {}", e.getMessage());
+        }
+        return UserStatsVO.builder()
+                .interviewCount(sessionStats == null ? 0L : sessionStats.getInterviewCount())
+                .avgScore(sessionStats == null || sessionStats.getAvgScore() == null
+                        ? BigDecimal.ZERO
+                        : sessionStats.getAvgScore())
+                .skillCount(growthStats == null ? 0 : growthStats.getSkillCount())
+                .reportCount(growthStats == null ? 0 : growthStats.getReportCount())
+                .build();
     }
 }
