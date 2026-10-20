@@ -7,16 +7,14 @@ function getToken() {
 
 function request(options) {
   return new Promise((resolve, reject) => {
-const token = getToken();
-const headers = {
-  'Content-Type': options.contentType || 'application/json',
-  'Authorization': 'Bearer ' + token,   // 即使 token 为空，也发送 "Bearer "
-  ...options.header,
-};
-    // 只在有 token 时才加 Authorization，避免发送 "Bearer "
-    if (token) {
-      headers['Authorization'] = 'Bearer ' + token;
-    }
+    const token = getToken();
+    // 只在有 token 时才带 Authorization，避免发出空的 "Bearer "
+    // 写在 options.header 之前：调用方可以覆盖它（如刷新 token 时改用 refreshToken）
+    const headers = {
+      'Content-Type': options.contentType || 'application/json',
+      ...(token ? { 'Authorization': 'Bearer ' + token } : {}),
+      ...options.header,
+    };
 
     uni.request({
       url: config.baseURL + options.url,
@@ -47,20 +45,20 @@ const headers = {
 
 export default {
   get: (url, data) => request({ url, method: 'GET', data }),
-  post: (url, data) => request({ url, method: 'POST', data }),
-  put: (url, data) => request({ url, method: 'PUT', data }),
-  delete: (url) => request({ url, method: 'DELETE' }),
+  // 第三个参数是可选的额外请求头，用来覆盖默认的 Authorization 等
+  post: (url, data, header) => request({ url, method: 'POST', data, header }),
+  put: (url, data, header) => request({ url, method: 'PUT', data, header }),
+  delete: (url, data, header) => request({ url, method: 'DELETE', data, header }),
 
   upload: (url, filePath, formData) => {
     return new Promise((resolve, reject) => {
+      const token = getToken();
       uni.uploadFile({
         url: config.baseURL + url,
         filePath,
         name: 'file',
         formData,
-        header: {
-          'Authorization': 'Bearer ' + getToken(),
-        },
+        header: token ? { 'Authorization': 'Bearer ' + token } : {},
         success: (res) => {
           // 兼容后端返回空或非 JSON 的情况
           if (res.statusCode === 200) {

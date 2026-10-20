@@ -13,7 +13,7 @@
  * 【你自己本机调试时】
  *   把下面改成 'localhost' 即可。
  */
-const SERVER_IP = 'localhost'; // TODO: 改成你电脑当前的局域网 IP
+const SERVER_IP = '10.179.216.28'; // 你电脑当前的局域网 IP（手机热点）
 
 export default {
   baseURL: 'http://' + SERVER_IP + ':10010', // 只到域名+端口，不加任何后缀
