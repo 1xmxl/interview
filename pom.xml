@@ -14,7 +14,7 @@
         <module>resume-service</module>
         <module>interview-session-service</module>
         <module>ai-evaluation-service</module>
-        <module>feedback-analysis-servic</module>
+        <module>feedback-analysis-service</module>
         <module>user-growth-service</module>
         <module>common-service</module>
         <module>auth-service</module>
@@ -24,6 +24,7 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <tjxt.version>1.0</tjxt.version>
@@ -173,11 +174,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <!--开启bootstrap文件读取-->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-bootstrap</artifactId>
         </dependency>
 
         <dependency>

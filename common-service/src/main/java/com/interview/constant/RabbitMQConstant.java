@@ -7,6 +7,8 @@ public interface RabbitMQConstant {
             String COURSE_EXCHANGE = "course.topic";
             /*简历有关交换机*/
             String RESUME_EXCHANGE = "resume.topic";
+            /*面试事件交换机（出题/评估/报告）*/
+            String INTERVIEW_EXCHANGE = "interview.events";
             /*订单有关的交换机*/
             String ORDER_EXCHANGE = "order.topic";
 
@@ -33,6 +35,9 @@ public interface RabbitMQConstant {
             String ERROR_QUEUE_TEMPLATE = "error.{}.queue";
             String resume_parse_queue= "resume.parse.queue";
             String RESUME_DELETE_QUEUE = "resume.delete.queue";
+            String ANSWER_EVALUATE_QUEUE = "answer.evaluate.queue";
+            String REPORT_GENERATE_QUEUE = "report.generate.queue";
+            String SPEECH_ANALYSIS_QUEUE = "speech.analysis.queue";
         }
         interface Key{
             /*课程有关的 RoutingKey*/
@@ -47,6 +52,9 @@ public interface RabbitMQConstant {
             String ORDER_PAY_KEY = "order.pay";
             String ORDER_REFUND_KEY = "order.refund";
             String RESUME_PARSE_LEY="resume.parse";
+            String ANSWER_EVALUATE_KEY="answer.evaluate";
+            String REPORT_GENERATE_KEY="report.generate";
+            String SPEECH_ANALYSIS_KEY="speech.analysis";
             /*积分相关RoutingKey*/
             /* 写回答 */
             String WRITE_REPLY = "reply.new";

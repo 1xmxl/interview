@@ -3,10 +3,10 @@ package client;
 import client.fallback.ResumeClientFallback;
 import com.interview.DTO.ParsedResumeData;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(value = "resume-service",fallbackFactory = ResumeClientFallback.class)
@@ -21,4 +21,8 @@ public interface ResumeClient {
             @RequestParam("userId") Long userId,
             @RequestBody ParsedResumeData data
     );
+
+    /** 获取简历结构化详情（出题时喂给 AI 做个性化提问） */
+    @GetMapping("/resumes/{resumeId}")
+    ParsedResumeData getResume(@PathVariable("resumeId") Long resumeId);
 }

@@ -27,7 +27,7 @@ public class AuthController
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginRequest loginRequest)
     {
-        String password = loginRequest.getPassword();
+        String password = loginRequest.getPassword();//密码
         String username = loginRequest.getUsername();
         log.info("start login,{},{}",username,password);
         LoginResponse login = authService.login(username,password);
