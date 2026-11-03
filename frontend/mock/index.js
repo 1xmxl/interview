@@ -19,22 +19,22 @@
  * 后端每完成一个接口，把对应项置 false 即可切换，页面无需改动。
  */
 export const USE_MOCK = {
-  /* ===== 连接真实后端：全部走网关 http://<SERVER_IP>:10010 ===== */
-  auth: false,          // 登录/注册/刷新/登出
-  resumeList: false,    // 简历列表/详情/删除/技能/经历
-  resumeUpload: false,  // 简历上传
-  configs: false,       // 面试配置 CRUD
-  createSession: false, // 创建会话/查询会话
-  getProfile: false,    // 用户资料
-  updateProfile: false, // 更新资料
-  reparse: false,       // 重新解析简历
-  sessionFlow: false,   // start/answer/end
-  history: false,       // 问答历史
-  evaluation: false,    // 评估/报告
-  feedback: false,      // 语音分析/聚合
-  growth: false,        // 成长技能/报告/薄弱点
-  dashboard: false,     // 首页数据概览
-  admin: false,         // 管理端：用户列表/角色授权（院系管理员）
+  /* ===== 单机演示模式：全部走本地 mock，不需要启动后端 ===== */
+auth: true,          // 登录/注册/刷新/登出
+resumeList: true,    // 简历列表/详情/删除/技能/经历
+resumeUpload: true,  // 简历上传
+configs: true,       // 面试配置 CRUD
+createSession: true, // 创建会话/查询会话
+getProfile: true,    // 用户资料
+updateProfile: true, // 更新资料
+reparse: true,       // 重新解析简历
+sessionFlow: true,   // start/answer/end
+history: true,       // 问答历史
+evaluation: true,    // 评估/报告
+feedback: true,      // 语音分析/聚合
+growth: true,        // 成长技能/报告/薄弱点
+dashboard: true,     // 首页数据概览
+admin: true,         // 管理端：用户列表/角色授权（院系管理员）
 };
 
 /* ===================== 角色与权限（苍穹权限模型） ===================== */

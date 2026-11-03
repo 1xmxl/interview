@@ -5,7 +5,7 @@
       <view v-if="reports.length > 0" class="resp-grid col-2 stagger-children">
         <view v-for="r in reports" :key="r.id" class="report-card glass-card" @tap="goDetail(r.id)">
           <view class="report-icon-wrap"><text class="report-icon">📋</text></view>
-          <view class="report-info"><text class="report-title">{{ r.title || '成长报告' }}</text><text class="report-date">{{ r.date || r.generatedAt || '' }}</text></view>
+          <view class="report-info"><text class="report-title">{{ reportTitle(r) }}</text><text class="report-date">{{ r.generatedAt || r.date || '' }}</text></view>
           <text class="report-arrow">›</text>
         </view>
       </view>
@@ -20,6 +20,12 @@ import PageLayout from '@/components/PageLayout.vue'
 import growthApi from '@/api/growth.js'
 const reports = ref([])
 onMounted(async () => { try { reports.value = await growthApi.listReports() || [] } catch (e) { reports.value = [] } })
+// mock 有 title，后端只有 periodStart/periodEnd：优先 title，其次周期
+const reportTitle = (r) => {
+  if (r.title) return r.title
+  if (r.periodStart && r.periodEnd) return (r.periodStart + ' ~ ' + r.periodEnd + ' 成长报告')
+  return '成长报告'
+}
 const goDetail = (id) => uni.navigateTo({ url: '/pages/growth/report-detail?id=' + id })
 </script>
 
