@@ -24,7 +24,7 @@ const configs = ref([]), resumes = ref([]), selectedConfig = ref(null), selected
 onMounted(async () => { try { configs.value = await interviewApi.listConfigs() || [] } catch (e) {}; try { resumes.value = await resumeApi.list() || [] } catch (e) {} })
 const onConfigPick = (e) => { selectedConfig.value = configs.value[e.detail.value]; showConfig.value = false }
 const onResumePick = (e) => { selectedResume.value = resumes.value[e.detail.value]; showResume.value = false }
-const create = async () => { if (!selectedConfig.value) { uni.showToast({ title: '请选择配置', icon: 'none' }); return }; try { uni.showLoading({ title: '创建中...' }); const session = await interviewApi.createSession({ configId: selectedConfig.value.id, resumeId: selectedResume.value?.id || null }); uni.hideLoading(); uni.navigateTo({ url: '/pages/interview/session-room?sessionId=' + session.id }) } catch (e) { uni.hideLoading() } }
+const create = async () => { if (!selectedConfig.value) { uni.showToast({ title: '请选择配置', icon: 'none' }); return }; try { uni.showLoading({ title: '创建中...' }); const session = await interviewApi.createSession({ configId: selectedConfig.value.id, resumeId: selectedResume.value?.id || null }); uni.hideLoading(); const sid = session && typeof session === 'object' ? (session.id ?? session.sessionId) : session; uni.navigateTo({ url: '/pages/interview/session-room?sessionId=' + sid }) } catch (e) { uni.hideLoading() } }
 </script>
 
 <style scoped>

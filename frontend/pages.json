@@ -25,7 +25,8 @@
     { "path": "pages/growth/skill-history", "style": { "navigationBarTitleText": "技能趋势", "navigationStyle": "custom" } },
     { "path": "pages/growth/report-list", "style": { "navigationBarTitleText": "成长报告", "navigationStyle": "custom" } },
     { "path": "pages/growth/report-detail", "style": { "navigationBarTitleText": "报告详情", "navigationStyle": "custom" } },
-    { "path": "pages/growth/weaknesses", "style": { "navigationBarTitleText": "薄弱点提升", "navigationStyle": "custom" } }
+    { "path": "pages/growth/weaknesses", "style": { "navigationBarTitleText": "薄弱点提升", "navigationStyle": "custom" } },
+    { "path": "pages/admin/user-list", "style": { "navigationBarTitleText": "系统管理", "navigationStyle": "custom" } }
   ],
   "globalStyle": {
     "navigationBarTextStyle": "black",

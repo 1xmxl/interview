@@ -50,6 +50,15 @@
             <view class="submit-btn" :class="{ 'btn-loading': submitting }" @tap="handleLogin">
               <text class="btn-text">登录</text>
             </view>
+            <!-- 演示账号：四类角色一键登录 -->
+            <view class="demo-row">
+              <text class="demo-title">演示账号（密码任意）</text>
+              <view class="demo-chips">
+                <view v-for="d in demoAccounts" :key="d.role" class="demo-chip" @tap="quickLogin(d.username)">
+                  <text class="demo-chip-text">{{ d.label }}</text>
+                </view>
+              </view>
+            </view>
             <!-- 注册入口 -->
             <text class="register-bar">
               还没有账号？
@@ -93,6 +102,13 @@ const handleLogin = async () => {
     uni.setStorageSync('token', res.accessToken || res.token)
     uni.setStorageSync('refreshToken', res.refreshToken)
     uni.setStorageSync('username', res.username || name)
+    // 苍穹权限模型：保存角色、权限码、菜单，侧边栏与页面按此隔离
+    uni.setStorageSync('role', res.role || 'STUDENT')
+    uni.setStorageSync('roleName', res.roleName || '学生')
+    uni.setStorageSync('menus', res.menus || [])
+    uni.setStorageSync('permissions', res.permissions || [])
+    uni.setStorageSync('dataScope', res.dataScope || 'SELF')
+    uni.setStorageSync('deptId', res.deptId || null)
     uni.hideLoading()
     uni.showToast({ title: '登录成功 🎉', icon: 'none' })
     setTimeout(() => {
@@ -107,6 +123,20 @@ const handleLogin = async () => {
 
 const goRegister = () => {
   uni.navigateTo({ url: '/pages/register/register' })
+}
+
+// 四类角色演示账号（mock 模式下密码任意）
+const demoAccounts = [
+  { role: 'STUDENT', label: '学生', username: 'student' },
+  { role: 'COUNSELOR', label: '辅导员', username: 'counselor' },
+  { role: 'HR', label: '企业HR', username: 'hr' },
+  { role: 'COLLEGE_ADMIN', label: '院系管理员', username: 'admin' },
+]
+
+const quickLogin = (name) => {
+  username.value = name
+  password.value = '123456'
+  handleLogin()
 }
 
 const goForgetPwd = () => {
@@ -334,6 +364,13 @@ const goExperience = () => {
   color: #fff;
   font-size: 15px;
 }
+
+/* ---- 演示账号 ---- */
+.demo-row { margin-bottom: 20px; }
+.demo-title { font-size: 12px; color: #94a3b8; display: block; margin-bottom: 8px; text-align: center; }
+.demo-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.demo-chip { padding: 6px 12px; border-radius: 999px; background: rgba(43,124,255,0.08); border: 1px solid rgba(43,124,255,0.18); }
+.demo-chip-text { font-size: 12px; color: #2b7cff; font-weight: 600; }
 
 .register-bar {
   text-align: center;

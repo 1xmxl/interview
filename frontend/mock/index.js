@@ -19,24 +19,72 @@
  * 后端每完成一个接口，把对应项置 false 即可切换，页面无需改动。
  */
 export const USE_MOCK = {
-  /* ===== 后端已实现 → 真实 ===== */
-  auth: false,          // auth-service：login/register/refresh/logout 已实现
-  resumeList: false,    // resume-service：list/detail/delete/skills/experiences 已实现
-  resumeUpload: false,  // resume-service：upload 已实现（依赖 OSS + RabbitMQ 解析闭环）
-  configs: false,       // interview-session：配置 CRUD 已实现（⚠️ 服务当前编译不过，见 README）
-  createSession: false, // interview-session：创建会话已实现（⚠️ 同上）
-
-  /* ===== 后端未实现 → mock ===== */
-  getProfile: false,     // user-service 已实现资料接口 GET /users/users/me/profile
-  updateProfile: false,  // user-service 已注册 UserInfoInterceptor，PUT /users/me 可用
-  reparse: false,       // resume-service 已实现 POST /resumes/{id}/reparse
-  sessionFlow: false,   // start/answer/end 已实现
-  history: false,       // getHistory 已实现
-  evaluation: false,    // ai-evaluation-service 已实现
-  feedback: false,      // feedback-analysis-service 已实现
-  growth: false,        // user-growth-service 已实现
-  dashboard: false,     // user-service 已实现 GET /users/me/stats 聚合
+  /* ===== 连接真实后端：全部走网关 http://<SERVER_IP>:10010 ===== */
+  auth: false,          // 登录/注册/刷新/登出
+  resumeList: false,    // 简历列表/详情/删除/技能/经历
+  resumeUpload: false,  // 简历上传
+  configs: false,       // 面试配置 CRUD
+  createSession: false, // 创建会话/查询会话
+  getProfile: false,    // 用户资料
+  updateProfile: false, // 更新资料
+  reparse: false,       // 重新解析简历
+  sessionFlow: false,   // start/answer/end
+  history: false,       // 问答历史
+  evaluation: false,    // 评估/报告
+  feedback: false,      // 语音分析/聚合
+  growth: false,        // 成长技能/报告/薄弱点
+  dashboard: false,     // 首页数据概览
+  admin: false,         // 管理端：用户列表/角色授权（院系管理员）
 };
+
+/* ===================== 角色与权限（苍穹权限模型） ===================== */
+
+// 四类角色的内置权限：菜单 + 按钮 + 接口
+const ROLE_PRESETS = {
+  STUDENT: {
+    role: 'STUDENT', roleName: '学生', dataScope: 'SELF', deptId: 2,
+    permissions: [
+      'menu:index', 'menu:resume', 'menu:interview', 'menu:evaluation',
+      'menu:feedback', 'menu:growth', 'btn:resume:upload', 'btn:interview:start',
+    ],
+  },
+  COUNSELOR: {
+    role: 'COUNSELOR', roleName: '辅导员', dataScope: 'DEPT', deptId: 1,
+    permissions: ['menu:index', 'menu:resume', 'menu:interview', 'menu:evaluation', 'menu:growth'],
+  },
+  HR: {
+    role: 'HR', roleName: '企业HR', dataScope: 'ALL', deptId: 4,
+    permissions: ['menu:index', 'menu:resume', 'menu:evaluation', 'menu:growth'],
+  },
+  COLLEGE_ADMIN: {
+    role: 'COLLEGE_ADMIN', roleName: '院系管理员', dataScope: 'COLLEGE', deptId: 1,
+    permissions: [
+      'menu:index', 'menu:resume', 'menu:interview', 'menu:evaluation',
+      'menu:feedback', 'menu:growth', 'menu:admin',
+      'btn:admin:user', 'btn:admin:role',
+      'api:admin:user:list', 'api:admin:user:role', 'api:admin:role:grant',
+    ],
+  },
+};
+
+// 演示账号 → 角色
+const roleOf = (username) => {
+  const u = (username || '').toLowerCase();
+  if (u.includes('counselor') || u.includes('辅导员')) return 'COUNSELOR';
+  if (u === 'hr' || u.startsWith('hr') || u.includes('企业')) return 'HR';
+  if (u.includes('admin') || u.includes('管理员')) return 'COLLEGE_ADMIN';
+  return 'STUDENT';
+};
+
+// 管理端用户列表（演示数据）
+const mockAdminUsers = [
+  { id: 1, username: 'student',   realName: '张伟', email: 'zhangwei@example.com', roleCode: 'STUDENT',       deptId: 2, createdAt: '2026-07-01 09:00:00' },
+  { id: 2, username: 'counselor', realName: '李老师', email: 'li@example.com',      roleCode: 'COUNSELOR',     deptId: 1, createdAt: '2026-07-02 10:00:00' },
+  { id: 3, username: 'hr',        realName: '王招聘', email: 'wang@example.com',    roleCode: 'HR',            deptId: 4, createdAt: '2026-07-03 11:00:00' },
+  { id: 4, username: 'admin',     realName: '赵管理', email: 'zhao@example.com',    roleCode: 'COLLEGE_ADMIN', deptId: 1, createdAt: '2026-07-04 12:00:00' },
+  { id: 5, username: 'student2',  realName: '刘洋', email: 'liuyang@example.com',   roleCode: 'STUDENT',       deptId: 2, createdAt: '2026-07-05 13:00:00' },
+];
+const DEPT_NAMES = { 1: '计算机科学学院', 2: '软件工程系', 3: '人工智能系', 4: '合作企业（示例）' };
 
 // 模拟网络延迟（毫秒），让 loading 状态可见、更接近真实体验
 const delay = (ms = 350) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -59,6 +107,9 @@ const mockUser = {
   fullName: '张伟',
   avatarUrl: '',
   phone: '138****8888',
+  // 与后端 UserVO 对齐
+  createdAt: '2026-07-01 09:00:00',
+  updatedAt: '2026-07-28 18:30:00',
 };
 
 /* ===================== 简历 ===================== */
@@ -121,139 +172,6 @@ const mockResumes = [
         institution: '武汉理工大学',
         degree: '本科',
         fieldOfStudy: '计算机科学与技术',
-        startDate: '2017-09',
-        endDate: '2021-06',
-      },
-    ],
-  },
-  {
-    id: 2,
-    resumeId: 2,
-    coverName: '李娜-产品经理.pdf',
-    originalFilename: '李娜-产品经理简历.pdf',
-    fileType: '.pdf',
-    status: 'PARSED',
-    createdAt: '2026-07-26 10:18:00',
-    skills: [
-      { skillName: '需求分析', proficiency: 'EXPERT' },
-      { skillName: '用户研究', proficiency: 'ADVANCED' },
-      { skillName: 'Axure', proficiency: 'ADVANCED' },
-      { skillName: '数据分析', proficiency: 'INTERMEDIATE' },
-      { skillName: 'SQL', proficiency: 'INTERMEDIATE' },
-      { skillName: '项目管理', proficiency: 'ADVANCED' },
-    ],
-    experiences: [
-      {
-        company: '杭州有赞科技有限公司',
-        position: '高级产品经理',
-        startDate: '2022-06',
-        endDate: '至今',
-        description:
-          '负责商家增长方向的产品规划，主导会员积分体系从 0 到 1 落地，上线 6 个月覆盖 12 万商家，会员复购率提升 18%。',
-      },
-      {
-        company: '上海微盟企业发展有限公司',
-        position: '产品经理',
-        startDate: '2020-07',
-        endDate: '2022-05',
-        description:
-          '负责 SaaS 后台的商品与订单模块，完成 30+ 需求迭代，推动后台页面重构使商家操作路径缩短 40%。',
-      },
-    ],
-    projects: [
-      {
-        projectName: '商家会员增长体系',
-        role: '产品负责人',
-        description:
-          '设计积分、等级、权益三层会员模型，联合研发与运营完成灰度上线，会员月活提升 26%。',
-        technologies: ['会员体系', '增长策略', '数据分析'],
-      },
-      {
-        projectName: 'SaaS 后台重构',
-        role: '核心产品',
-        description:
-          '梳理 200+ 页面信息架构，推动组件化改造，商家任务完成率从 61% 提升至 83%。',
-        technologies: ['信息架构', 'B 端设计', '埋点分析'],
-      },
-    ],
-    educations: [
-      {
-        institution: '浙江大学',
-        degree: '本科',
-        fieldOfStudy: '工商管理',
-        startDate: '2016-09',
-        endDate: '2020-06',
-      },
-    ],
-  },
-  {
-    id: 3,
-    resumeId: 3,
-    coverName: '陈晨-前端开发工程师.pdf',
-    originalFilename: '陈晨-前端开发工程师.pdf',
-    fileType: '.pdf',
-    status: 'PENDING',
-    createdAt: '2026-07-28 09:05:00',
-    skills: [],
-    experiences: [],
-    projects: [],
-    educations: [],
-  },
-  {
-    id: 4,
-    resumeId: 4,
-    coverName: '龚涛-数据分析师.pdf',
-    originalFilename: '龚涛-数据分析师-2026.pdf',
-    fileType: '.pdf',
-    status: 'PARSED',
-    createdAt: '2026-07-29 11:20:00',
-    skills: [
-      { skillName: 'SQL', proficiency: 'EXPERT' },
-      { skillName: 'Python', proficiency: 'ADVANCED' },
-      { skillName: 'Tableau', proficiency: 'ADVANCED' },
-      { skillName: '数据建模', proficiency: 'ADVANCED' },
-      { skillName: 'A/B 测试', proficiency: 'INTERMEDIATE' },
-      { skillName: 'Hive', proficiency: 'INTERMEDIATE' },
-    ],
-    experiences: [
-      {
-        company: '杭州网易数帆科技有限公司',
-        position: '数据分析师',
-        startDate: '2022-03',
-        endDate: '至今',
-        description:
-          '负责用户增长与留存分析，搭建核心指标看板，推动新用户 7 日留存提升 9 个百分点。',
-      },
-      {
-        company: '上海携程商务有限公司',
-        position: '数据分析实习生',
-        startDate: '2021-06',
-        endDate: '2022-02',
-        description:
-          '参与酒店业务经营分析，输出周度经营报告，支撑区域定价策略调整。',
-      },
-    ],
-    projects: [
-      {
-        projectName: '用户流失预警模型',
-        role: '数据负责人',
-        description:
-          '基于 XGBoost 构建流失概率模型，召回率 78%，配合运营触达使月流失率下降 12%。',
-        technologies: ['Python', 'XGBoost', 'Hive'],
-      },
-      {
-        projectName: '经营指标看板',
-        role: '核心开发',
-        description:
-          '整合 6 个业务域数据，搭建 40+ 指标的可视化看板，日均访问 800+ 人次。',
-        technologies: ['Tableau', 'SQL', '数据建模'],
-      },
-    ],
-    educations: [
-      {
-        institution: '东南大学',
-        degree: '本科',
-        fieldOfStudy: '统计学',
         startDate: '2017-09',
         endDate: '2021-06',
       },
@@ -603,14 +521,39 @@ const mockDashboard = {
 
 export const mock = {
   /* ---- 用户 ---- */
-  login: ({ username }) => delay().then(() => ({
-    accessToken: fakeToken(),
-    refreshToken: fakeToken(),
-    username: username || mockUser.username,
-  })),
-  register: () => delay(500).then(() => true),
+  login: ({ username }) => delay().then(() => {
+    const preset = ROLE_PRESETS[roleOf(username)];
+    return {
+      accessToken: fakeToken(),
+      refreshToken: fakeToken(),
+      username: username || mockUser.username,
+      role: preset.role,
+      roleName: preset.roleName,
+      dataScope: preset.dataScope,
+      deptId: preset.deptId,
+      // 与后端 LoginResponse 对齐：permissions + menus
+      permissions: [...preset.permissions],
+      menus: preset.permissions.filter((p) => p.startsWith('menu:')),
+    };
+  }),
+  register: (data) => delay(500).then(() => {
+    if (data && data.username) mockUser.username = data.username;
+    if (data && data.roleCode) mockUser.roleCode = data.roleCode;
+    if (data && data.deptId) mockUser.deptId = data.deptId;
+    return true;
+  }),
   logout: () => delay(200).then(() => true),
-  getProfile: () => delay(300).then(() => ({ ...mockUser })),
+  getProfile: () => delay(300).then(() => {
+    const roleCode = mockUser.roleCode || 'STUDENT';
+    const preset = ROLE_PRESETS[roleCode] || ROLE_PRESETS.STUDENT;
+    return {
+      ...mockUser,
+      roleCode: preset.role,
+      roleName: preset.roleName,
+      deptId: mockUser.deptId || preset.deptId,
+      deptName: DEPT_NAMES[mockUser.deptId || preset.deptId] || '',
+    };
+  }),
   updateProfile: (data) => delay(300).then(() => {
     Object.assign(mockUser, data);
     return true;
@@ -620,6 +563,7 @@ export const mock = {
   listResumes: () => delay().then(() => mockResumes.map((r) => ({
     id: r.id, coverName: r.coverName, originalFilename: r.originalFilename,
     fileType: r.fileType, status: r.status, createdAt: r.createdAt,
+    updatedAt: r.updatedAt || r.createdAt,
   }))),
   resumeDetail: (id) => delay(400).then(() => {
     const r = mockResumes.find((x) => String(x.id) === String(id)) || mockResumes[0];
@@ -630,9 +574,9 @@ export const mock = {
   reparseResume: () => delay(800).then(() => true),
 
   /* ---- 面试配置 ---- */
-  listConfigs: () => delay().then(() => mockConfigs.map((c) => ({ ...c }))),
+  listConfigs: () => delay().then(() => mockConfigs.map((c) => ({ userId: 1, ...c }))),
   configDetail: (id) => delay(250).then(() =>
-    mockConfigs.find((c) => String(c.id) === String(id)) || mockConfigs[0]),
+    ({ userId: 1, ...(mockConfigs.find((c) => String(c.id) === String(id)) || mockConfigs[0]) })),
   saveConfig: (data, id) => delay(400).then(() => {
     if (id) {
       const idx = mockConfigs.findIndex((c) => String(c.id) === String(id));
@@ -654,12 +598,19 @@ export const mock = {
     mockSessions[id] = { id, status: 'CREATED', currentQuestionIndex: 0, totalQuestions: QUESTION_POOL.length };
     return { id };
   }),
-  getSession: (id) => delay(250).then(() =>
-    mockSessions[id] || { id: Number(id) || 1001, status: 'CREATED', currentQuestionIndex: 0, totalQuestions: QUESTION_POOL.length }),
+  getSession: (id) => delay(250).then(() => {
+    const s = mockSessions[id] || { id: Number(id) || 1001, status: 'CREATED', currentQuestionIndex: 0, totalQuestions: QUESTION_POOL.length };
+    return {
+      userId: 1, configId: 1, resumeId: 1,
+      startTime: s.status === 'CREATED' ? null : '2026-07-26 10:00:00',
+      endTime: s.status === 'COMPLETED' ? '2026-07-26 10:30:00' : null,
+      ...s,
+    };
+  }),
   startSession: (id) => delay(900).then(() => {
     mockSessions[id] = mockSessions[id] || { id: Number(id) || 1001, status: 'IN_PROGRESS', currentQuestionIndex: 0, totalQuestions: QUESTION_POOL.length };
     mockSessions[id].status = 'IN_PROGRESS';
-    return { question: QUESTION_POOL[0], firstQuestion: QUESTION_POOL[0], totalQuestions: QUESTION_POOL.length };
+    return { questionId: 1, question: QUESTION_POOL[0], firstQuestion: QUESTION_POOL[0], totalQuestions: QUESTION_POOL.length };
   }),
   submitAnswer: (id, { text }) => delay(800).then(() => {
     const s = mockSessions[id] || (mockSessions[id] = { id: Number(id) || 1001, status: 'IN_PROGRESS', currentQuestionIndex: 0, totalQuestions: QUESTION_POOL.length });
@@ -670,6 +621,7 @@ export const mock = {
     if (hasNext) s.currentQuestionIndex = idx + 1;
     else s.status = 'COMPLETED';
     return {
+      questionId: idx + 2,
       nextQuestion: next,
       hasNext,
       comment,
@@ -687,11 +639,25 @@ export const mock = {
   /* ---- 评估 ---- */
   getEval: (sessionId) => delay(800).then(() => {
     const e = { ...mockEvaluation, sessionId: Number(sessionId) || mockEvaluation.sessionId };
-    return { ...e, answers: e.answers.map((a) => ({ ...a })) };
+    return {
+      ...e,
+      // 与后端 EvaluationResultVO 对齐：reportContent / metrics / generatedAt
+      reportContent: `<h2>面试评估报告</h2><p>${e.summary}</p>`,
+      metrics: { ...e.scores },
+      generatedAt: '2026-07-26 10:30:00',
+      answers: e.answers.map((a) => ({ ...a })),
+    };
   }),
   getAnswerDetail: (sessionId, answerId) => delay(500).then(() => {
     const a = mockEvaluation.answers.find((x) => String(x.answerId) === String(answerId)) || mockEvaluation.answers[0];
     return {
+      // 与后端 AnswerEvaluations 对齐
+      id: a.answerId,
+      sessionId: Number(sessionId) || mockEvaluation.sessionId,
+      questionId: a.questionId,
+      answerId: a.answerId,
+      evaluatedAt: '2026-07-26 10:30:00',
+      // 页面展示字段
       question: a.question,
       answer: mockHistoryQA.find((h) => h.answerId === a.answerId)?.answerText || '',
       technicalScore: a.technicalScore,
@@ -712,18 +678,65 @@ export const mock = {
   })),
 
   /* ---- 成长 ---- */
-  getSkills: () => delay(500).then(() => mockSkills.map((s) => ({ ...s }))),
+  getSkills: () => delay(500).then(() => mockSkills.map((s) => ({
+    ...s,
+    // 与后端 SkillScoreVO 对齐
+    skillName: s.name,
+    dimension: '技术能力',
+    recordedAt: '2026-07-26 10:30:00',
+  }))),
   getSkillHistory: (skill, period) => delay(400).then(() => {
     const list = SKILL_TRENDS[skill] || defaultTrend;
     return list.map((p) => ({ ...p }));
   }),
-  listReports: () => delay(400).then(() => mockReports.map((r) => ({ id: r.id, title: r.title, date: r.date }))),
-  reportDetail: (id) => delay(500).then(() =>
-    mockReports.find((r) => String(r.id) === String(id)) || mockReports[0]),
-  getWeaknesses: () => delay(500).then(() => mockWeaknesses.map((w) => ({ ...w }))),
+  listReports: () => delay(400).then(() => mockReports.map((r) => ({
+    id: r.id, title: r.title, date: r.date,
+    // 与后端 GrowthReports 对齐
+    userId: 1,
+    periodStart: r.date,
+    periodEnd: r.date,
+    generatedAt: r.date + ' 10:00:00',
+    insights: { title: r.title, date: r.date, content: r.content },
+  }))),
+  reportDetail: (id) => delay(500).then(() => {
+    const r = mockReports.find((x) => String(x.id) === String(id)) || mockReports[0];
+    return {
+      ...r,
+      // 与后端 GrowthReports 对齐
+      userId: 1,
+      periodStart: r.date,
+      periodEnd: r.date,
+      generatedAt: r.date + ' 10:00:00',
+      insights: { title: r.title, date: r.date, content: r.content },
+    };
+  }),
+  getWeaknesses: () => delay(500).then(() => mockWeaknesses.map((w) => ({
+    ...w,
+    // 与后端 WeaknessVO 对齐
+    skillName: w.skill,
+    dimension: '技术能力',
+    score: w.severity === 'high' ? 45 : w.severity === 'medium' ? 58 : 66,
+  }))),
 
   /* ---- 首页聚合 ---- */
   getDashboard: () => delay(400).then(() => ({ ...mockDashboard })),
+
+  /* ---- 管理端（苍穹权限模型） ---- */
+  adminListUsers: () => delay(400).then(() => mockAdminUsers.map((u) => ({
+    ...u,
+    roleName: ROLE_PRESETS[u.roleCode]?.roleName || u.roleCode,
+    deptName: DEPT_NAMES[u.deptId] || '',
+  }))),
+  adminRoles: () => delay(300).then(() => Object.values(ROLE_PRESETS).map((p) => ({
+    code: p.role, name: p.roleName, dataScope: p.dataScope,
+  }))),
+  adminRolePermissions: (roleCode) => delay(300).then(() =>
+    [...(ROLE_PRESETS[roleCode]?.permissions || [])]),
+  adminUpdateRole: (userId, roleCode) => delay(300).then(() => {
+    const u = mockAdminUsers.find((x) => String(x.id) === String(userId));
+    if (u) u.roleCode = roleCode;
+    return true;
+  }),
 };
 
 export default mock;

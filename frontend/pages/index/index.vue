@@ -11,6 +11,7 @@
       <!-- ===== 桌面端：欢迎行（侧边栏已有用户信息，不重复显示） ===== -->
       <view class="welcome-row hide-mobile">
         <text class="welcome-greeting">{{ greetingText }}，今天想练习什么？</text>
+        <text v-if="roleName" class="role-badge">{{ roleName }}</text>
       </view>
 
       <!-- ===== 移动端：智能 Banner ===== -->
@@ -140,6 +141,8 @@ import interviewApi from '@/api/interview.js'
 import dashboardApi from '@/api/dashboard.js'
 
 const username = ref('')
+// 苍穹权限模型：登录时保存的角色名称
+const roleName = ref(uni.getStorageSync('roleName') || '')
 const hasResume = ref(false)
 const hasConfig = ref(false)
 const resumeName = ref('')
@@ -292,8 +295,9 @@ onMounted(async () => {
 }
 
 /* ===== 桌面欢迎行 ===== */
-.welcome-row { margin-bottom: 8px; }
+.welcome-row { margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
 .welcome-greeting { font-size: 20px; font-weight: 700; color: #1e1b4b; display: block; }
+.role-badge { font-size: 12px; font-weight: 600; color: #5b3cc4; background: rgba(124,92,252,0.1); border-radius: 999px; padding: 4px 12px; }
 
 /* ===== 移动端 Hero ===== */
 .mobile-hero { padding: 48rpx 0 4rpx; position: relative; z-index: 1; }

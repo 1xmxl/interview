@@ -16,6 +16,23 @@
           </view>
           <!-- 注册表单 -->
           <view class="form-wrap">
+            <!-- 苍穹权限模型：注册时选择身份（四类角色） -->
+            <view class="role-row">
+              <text class="role-title">选择身份</text>
+              <view class="role-chips">
+                <view v-for="r in roles" :key="r.code" class="role-chip" :class="{ active: roleCode === r.code }" @tap="roleCode = r.code">
+                  <text class="role-chip-text">{{ r.label }}</text>
+                </view>
+              </view>
+            </view>
+            <view class="input-group">
+              <input
+                v-model="realName"
+                class="glass-input"
+                placeholder="真实姓名"
+                placeholder-style="color:#a0aec0"
+              />
+            </view>
             <view class="input-group">
               <input
                 v-model="username"
@@ -79,8 +96,16 @@
 <script setup>
 import { ref, computed } from 'vue'
 import userApi from '@/api/user.js'
-const username = ref(''), email = ref(''), password = ref(''), confirmPwd = ref('')
+const username = ref(''), email = ref(''), password = ref(''), confirmPwd = ref(''), realName = ref('')
 const showPwd = ref(false), showConfirm = ref(false), agreed = ref(false)
+// 苍穹权限模型：注册时选择身份（四类角色）
+const roleCode = ref('STUDENT')
+const roles = [
+  { code: 'STUDENT', label: '学生' },
+  { code: 'COUNSELOR', label: '辅导员' },
+  { code: 'HR', label: '企业HR' },
+  { code: 'COLLEGE_ADMIN', label: '院系管理员' },
+]
 
 const strengthPercent = computed(() => { const p = password.value; if (!p) return 0; let s = 0; if (p.length >= 6) s += 30; if (p.length >= 10) s += 20; if (/[A-Z]/.test(p)) s += 15; if (/[0-9]/.test(p)) s += 15; if (/[^A-Za-z0-9]/.test(p)) s += 20; return Math.min(s, 100) })
 const strengthClass = computed(() => { const s = strengthPercent.value; if (s >= 80) return 'strong'; if (s >= 50) return 'medium'; return 'weak' })
@@ -90,7 +115,7 @@ const handleRegister = async () => {
   if (!username.value || !email.value || !password.value) { uni.showToast({ title: '请填写完整信息', icon: 'none' }); return }
   if (password.value !== confirmPwd.value) { uni.showToast({ title: '两次密码不一致', icon: 'none' }); return }
   if (password.value.length < 6) { uni.showToast({ title: '密码至少6位', icon: 'none' }); return }
-  try { uni.showLoading({ title: '注册中...', mask: true }); await userApi.register({ username: username.value, password: password.value, email: email.value }); uni.hideLoading(); uni.showToast({ title: '注册成功 🎉', icon: 'none' }); setTimeout(() => uni.navigateBack(), 800) } catch (e) { uni.hideLoading() }
+  try { uni.showLoading({ title: '注册中...', mask: true }); await userApi.register({ username: username.value, password: password.value, email: email.value, realName: realName.value, roleCode: roleCode.value }); uni.hideLoading(); uni.showToast({ title: '注册成功 🎉', icon: 'none' }); setTimeout(() => uni.navigateBack(), 800) } catch (e) { uni.hideLoading() }
 }
 const goLogin = () => uni.navigateBack()
 </script>
@@ -174,6 +199,42 @@ const goLogin = () => uni.navigateBack()
 .card-subtitle {
   font-size: 14px;
   color: #64748b;
+}
+
+/* ---- 角色选择（苍穹权限模型） ---- */
+.role-row {
+  margin-bottom: 16px;
+}
+.role-title {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+}
+.role-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.role-chip {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+}
+.role-chip.active {
+  background: linear-gradient(135deg, #7c5cfc 0%, #4facfe 100%);
+  border-color: transparent;
+  box-shadow: 0 6px 16px rgba(124, 92, 252, 0.25);
+}
+.role-chip-text {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 600;
+}
+.role-chip.active .role-chip-text {
+  color: #fff;
 }
 
 .form-wrap {

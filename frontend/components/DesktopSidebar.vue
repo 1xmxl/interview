@@ -15,7 +15,7 @@
     <!-- 导航菜单 -->
     <view class="sidebar-nav">
       <view
-        v-for="item in navItems"
+        v-for="item in visibleNav"
         :key="item.key"
         class="nav-item"
         :class="{ active: currentPage === item.key }"
@@ -34,7 +34,7 @@
         <text class="user-avatar">🙋</text>
         <view class="user-info">
           <text class="user-name">{{ username || '用户' }}</text>
-          <text class="user-sub">查看资料</text>
+          <text class="user-sub">{{ roleName || '查看资料' }}</text>
         </view>
       </view>
       <view class="footer-logout" @tap="logout">
@@ -46,7 +46,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { isDesktop } from '@/common/js/device.js'
 
 const props = defineProps({
@@ -54,18 +54,29 @@ const props = defineProps({
 })
 
 const username = ref('')
+const roleName = ref('')
+// 苍穹权限模型：登录返回的菜单权限码，侧边栏按此过滤
+const menus = ref([])
 
 const navItems = [
-  { key: 'index',       icon: '🏠', label: '首页',       path: '/pages/index/index' },
-  { key: 'resume',      icon: '📄', label: '我的简历',    path: '/pages/resume/list' },
-  { key: 'config',      icon: '⚙️', label: '面试配置',    path: '/pages/interview/config-list' },
-  { key: 'history',     icon: '💬', label: '面试记录',    path: '/pages/interview/session-history' },
-  { key: 'evaluation',  icon: '📊', label: '评估结果',    path: '/pages/evaluation/result' },
-  { key: 'analytics',   icon: '🎙️', label: '语音分析',    path: '/pages/feedback/analytics' },
-  { key: 'skills',      icon: '🌱', label: '技能成长',    path: '/pages/growth/skills' },
-  { key: 'reports',     icon: '📋', label: '成长报告',    path: '/pages/growth/report-list' },
-  { key: 'profile',     icon: '👤', label: '个人资料',    path: '/pages/user/profile' },
+  { key: 'index',       icon: '🏠', label: '首页',       path: '/pages/index/index',                    perm: 'menu:index' },
+  { key: 'resume',      icon: '📄', label: '简历管理',    path: '/pages/resume/list',                     perm: 'menu:resume' },
+  { key: 'config',      icon: '⚙️', label: '面试配置',    path: '/pages/interview/config-list',           perm: 'menu:interview' },
+  { key: 'history',     icon: '💬', label: '面试记录',    path: '/pages/interview/session-history',       perm: 'menu:interview' },
+  { key: 'evaluation',  icon: '📊', label: '评估结果',    path: '/pages/evaluation/result',               perm: 'menu:evaluation' },
+  { key: 'analytics',   icon: '🎙️', label: '语音分析',    path: '/pages/feedback/analytics',              perm: 'menu:feedback' },
+  { key: 'skills',      icon: '🌱', label: '技能成长',    path: '/pages/growth/skills',                   perm: 'menu:growth' },
+  { key: 'reports',     icon: '📋', label: '成长报告',    path: '/pages/growth/report-list',              perm: 'menu:growth' },
+  { key: 'admin',       icon: '🛡️', label: '系统管理',    path: '/pages/admin/user-list',                 perm: 'menu:admin' },
+  { key: 'profile',     icon: '👤', label: '个人资料',    path: '/pages/user/profile',                    perm: '' },
 ]
+
+// 有菜单权限数据时按权限过滤；没有时（旧 token）回退显示全部，避免白屏
+const visibleNav = computed(() => {
+  const perms = menus.value
+  if (!Array.isArray(perms) || perms.length === 0) return navItems
+  return navItems.filter((item) => !item.perm || perms.includes(item.perm))
+})
 
 function navigateTo(item) {
   if (item.key === props.currentPage) return
@@ -77,14 +88,18 @@ function goProfile() {
 }
 
 function logout() {
-  uni.removeStorageSync('token')
-  uni.removeStorageSync('username')
+  ;['token', 'refreshToken', 'username', 'role', 'roleName', 'menus', 'permissions', 'dataScope', 'deptId']
+    .forEach((k) => uni.removeStorageSync(k))
   uni.reLaunch({ url: '/pages/login/login' })
 }
 
 onMounted(() => {
   const stored = uni.getStorageSync('username')
   if (stored) username.value = stored
+  const storedRole = uni.getStorageSync('roleName')
+  if (storedRole) roleName.value = storedRole
+  const storedMenus = uni.getStorageSync('menus')
+  if (Array.isArray(storedMenus)) menus.value = storedMenus
 })
 </script>
 
@@ -109,7 +124,6 @@ onMounted(() => {
 .sidebar-brand {
   padding: 28px 24px 20px;
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 12px;
 }
@@ -137,7 +151,6 @@ onMounted(() => {
 }
 .nav-item {
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 12px;
   padding: 11px 14px;
@@ -155,7 +168,6 @@ onMounted(() => {
 }
 .nav-icon { font-size: 18px; flex-shrink: 0; }
 .nav-label {
-  flex: 1;
   font-size: 14px;
   font-weight: 500;
   color: #6b7280;
@@ -186,7 +198,6 @@ onMounted(() => {
 }
 .footer-user {
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
@@ -201,7 +212,6 @@ onMounted(() => {
 .user-sub { font-size: 11px; color: #9ca3af; margin-top: 1px; }
 .footer-logout {
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
