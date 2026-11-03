@@ -49,6 +49,7 @@ const badgeStyle = computed(() => {
 <style scoped>
 .skill-badge {
   display: inline-flex;
+  flex-direction: row;
   align-items: center;
   gap: 8rpx;
   padding: 8rpx 20rpx;

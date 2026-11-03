@@ -57,6 +57,7 @@ defineProps({
 .page-layout {
   min-height: 100vh;
   display: flex;
+  flex-direction: row;
 }
 
 /* ---- 主内容区 ---- */
@@ -74,6 +75,7 @@ defineProps({
 /* ---- 桌面端顶部栏 ---- */
 .desktop-topbar {
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   padding: 20px 32px 16px;
@@ -87,7 +89,8 @@ defineProps({
 }
 .topbar-title {
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: 0.3px;
   color: #1e1b4b;
 }
 .topbar-actions {
@@ -105,7 +108,7 @@ defineProps({
 }
 
 .page-main.with-sidebar .page-body {
-  padding: 20px 32px 40px;
+  padding: 22px 32px 40px;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;

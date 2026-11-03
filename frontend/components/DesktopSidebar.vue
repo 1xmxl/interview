@@ -109,6 +109,7 @@ onMounted(() => {
 .sidebar-brand {
   padding: 28px 24px 20px;
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 12px;
 }
@@ -136,6 +137,7 @@ onMounted(() => {
 }
 .nav-item {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 12px;
   padding: 11px 14px;
@@ -153,6 +155,7 @@ onMounted(() => {
 }
 .nav-icon { font-size: 18px; flex-shrink: 0; }
 .nav-label {
+  flex: 1;
   font-size: 14px;
   font-weight: 500;
   color: #6b7280;
@@ -183,6 +186,7 @@ onMounted(() => {
 }
 .footer-user {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
@@ -197,6 +201,7 @@ onMounted(() => {
 .user-sub { font-size: 11px; color: #9ca3af; margin-top: 1px; }
 .footer-logout {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 10px;
   padding: 8px 10px;

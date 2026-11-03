@@ -1,14 +1,27 @@
 <!-- 简历详情 - 移动全宽 + 桌面双栏 -->
 <template>
   <PageLayout currentPage="resume" title="简历详情">
+    <template #header-right>
+      <view class="topbar-back" @tap="backToList">
+        <text class="topbar-back-icon">←</text>
+        <text class="topbar-back-text">返回列表</text>
+      </view>
+    </template>
+
     <view class="content">
       <view v-if="loading" class="loading-wrap"><SkeletonCard :lines="4" /><SkeletonCard :lines="3" /></view>
 
       <view v-else class="detail-layout">
         <view class="detail-main">
           <view class="main-header glass-strong">
-            <view class="mh-icon">📄</view>
-            <view>
+            <view class="mh-cover">
+              <ResumeCover
+                :name="resume.coverName || resume.originalFilename"
+                :file-type="fileTypeOf(resume)"
+                :seed="resume.id || resume.originalFilename"
+              />
+            </view>
+            <view class="mh-text">
               <text class="mh-title">{{ resume.coverName || resume.originalFilename || '未命名简历' }}</text>
               <view class="mh-meta">
                 <text class="mh-badge" :style="statusStyle(resume.status)">{{ statusText(resume.status) }}</text>
@@ -97,6 +110,9 @@
 import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import PageLayout from '@/components/PageLayout.vue'
+import SkeletonCard from '@/components/SkeletonCard.vue'
+import SkillBadge from '@/components/SkillBadge.vue'
+import ResumeCover from '@/components/ResumeCover.vue'
 import resumeApi from '@/api/resume.js'
 const resume = ref({}), loading = ref(true)
 let resumeId = ''
@@ -133,6 +149,16 @@ const dedupe = (arr, keyFn) => {
     return true
   })
 }
+const backToList = () => {
+  const pages = getCurrentPages()
+  if (pages && pages.length > 1) uni.navigateBack({ delta: 1 })
+  else uni.reLaunch({ url: '/pages/resume/list' })
+}
+const fileTypeOf = (r) => {
+  const n = (r && (r.originalFilename || r.coverName)) || ''
+  const m = String(n).match(/\.([a-z0-9]+)$/i)
+  return m ? m[1].toUpperCase().slice(0, 4) : 'PDF'
+}
 const reparse = async () => { try { await resumeApi.reparse(resumeId); uni.showToast({ title: '已提交', icon: 'none' }) } catch (e) {} }
 const deleteResume = async () => { uni.showModal({ title: '确认删除', content: '删除后不可恢复', success: async (r) => { if (r.confirm) { try { await resumeApi.delete(resumeId); uni.showToast({ title: '已删除' }); uni.navigateBack() } catch (e) {} } } }) }
 const formatTime = (d) => { if (!d) return ''; const dt = new Date(String(d).replace(' ', 'T')); if (isNaN(dt.getTime())) return ''; return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0') }
@@ -144,33 +170,63 @@ const statusStyle = (s) => { const m = { PENDING:'color:#f59e0b;background:rgba(
 <style scoped>
 .content { padding-bottom: 80rpx; }
 
+/* ---- 卡片表面（uni.scss 的全局类在 H5 下未加载，这里补齐） ---- */
+.glass-strong,
+.glass-card,
+.glass-light {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(30, 27, 75, 0.04);
+}
+
+/* ---- 双列小块（grid 在 uni-app-x 下不支持，改用 flex） ---- */
+.resp-grid { display: flex; flex-direction: row; flex-wrap: wrap; gap: 12px; }
+.resp-grid > view { width: 100%; }
+@media (min-width: 768px) {
+  .resp-grid.col-2 > view { width: calc(50% - 6px); }
+}
+
 .detail-layout { display: flex; flex-direction: column; gap: 20rpx; }
 @media (min-width: 768px) {
   .detail-layout { flex-direction: row; gap: 32px; align-items: flex-start; }
 }
 .detail-main { flex: 1; min-width: 0; }
 @media (min-width: 768px) {
-  .detail-sidebar { width: 280px; flex-shrink: 0; position: sticky; top: 80px; }
+  .detail-sidebar { display: flex; flex-direction: column; width: 280px; flex-shrink: 0; position: sticky; top: 80px; }
 }
 
 .main-header {
-  display: flex; align-items: center; gap: 20rpx;
+  display: flex; flex-direction: row; align-items: center; gap: 20rpx;
   padding: 28rpx; margin-bottom: 18rpx; border-radius: 22rpx;
 }
-.mh-icon { font-size: 48rpx; }
+.mh-cover {
+  width: 140rpx; height: 190rpx; flex-shrink: 0;
+  border-radius: 12rpx; overflow: hidden;
+  background: linear-gradient(160deg, #f4f1ff, #eef6ff);
+  border: 1rpx solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6rpx 16rpx rgba(30, 27, 75, 0.1);
+  display: flex; align-items: center; justify-content: center;
+}
+.mh-text { flex: 1; min-width: 0; }
+@media (min-width: 768px) {
+  .mh-cover { width: 76px; height: 104px; }
+  .mh-title { font-size: 17px; }
+  .mh-date { font-size: 12px; }
+}
 .mh-title { font-size: 30rpx; font-weight: 700; color: #1e1b4b; display: block; }
-.mh-meta { display: flex; gap: 14rpx; align-items: center; margin-top: 8rpx; }
+.mh-meta { display: flex; flex-direction: row; gap: 14rpx; align-items: center; margin-top: 8rpx; }
 .mh-badge { font-size: 22rpx; padding: 4rpx 14rpx; border-radius: 10rpx; font-weight: 600; }
 .mh-date { font-size: 24rpx; color: #9ca3af; }
 
 .block { padding: 24rpx; margin-bottom: 16rpx; border-radius: 18rpx; }
 .block-title { font-size: 26rpx; font-weight: 700; color: #1e1b4b; display: block; margin-bottom: 16rpx; }
-.skill-cloud { display: flex; flex-wrap: wrap; gap: 10rpx; }
+.skill-cloud { display: flex; flex-direction: row; flex-wrap: wrap; gap: 10rpx; }
 
-.exp-item { display: flex; gap: 16rpx; margin-bottom: 14rpx; }
+.exp-item { display: flex; flex-direction: row; gap: 16rpx; margin-bottom: 14rpx; }
 .exp-dot { width: 12rpx; height: 12rpx; border-radius: 50%; background: #7c5cfc; margin-top: 10rpx; flex-shrink: 0; }
 .exp-content { flex: 1; padding: 16rpx; border-radius: 14rpx; }
-.exp-row { display: flex; align-items: baseline; gap: 8rpx; }
+.exp-row { display: flex; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 8rpx; }
 .exp-pos { font-size: 26rpx; font-weight: 700; color: #1e1b4b; }
 .exp-company { font-size: 24rpx; color: #7c5cfc; }
 .exp-date { font-size: 22rpx; color: #9ca3af; display: block; margin-top: 4rpx; }
@@ -180,7 +236,7 @@ const statusStyle = (s) => { const m = { PENDING:'color:#f59e0b;background:rgba(
 .proj-name { font-size: 26rpx; font-weight: 700; color: #1e1b4b; display: block; }
 .proj-role { font-size: 22rpx; color: #f472b6; display: block; }
 .proj-desc { font-size: 24rpx; color: #6b7280; display: block; margin-top: 6rpx; line-height: 1.5; }
-.tech-row { display: flex; flex-wrap: wrap; gap: 8rpx; margin-top: 10rpx; }
+.tech-row { display: flex; flex-direction: row; flex-wrap: wrap; gap: 8rpx; margin-top: 10rpx; }
 .tech-tag { font-size: 20rpx; padding: 2rpx 10rpx; background: rgba(124,92,252,0.08); color: #7c5cfc; border-radius: 8rpx; }
 
 .edu-item { padding: 16rpx; border-radius: 14rpx; }
@@ -195,11 +251,39 @@ const statusStyle = (s) => { const m = { PENDING:'color:#f59e0b;background:rgba(
 .sb-btn:active { transform: scale(0.96); }
 .sb-btn.primary { background: linear-gradient(135deg, #7c5cfc, #4facfe); color: #fff; }
 .sb-btn.danger { border: 1px solid rgba(248,113,113,0.3); color: #f87171; }
-.sb-info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
+.sb-info-row { display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
 .sb-label { font-size: 14px; color: #9ca3af; }
-.sb-value { font-size: 14px; color: #1e1b4b; font-weight: 500; max-width: 60%; text-align: right; word-break: break-all; }
+.sb-value { font-size: 13.5px; color: #1e1b4b; font-weight: 500; max-width: 66%; text-align: right; overflow-wrap: break-word; word-break: normal; }
 
-.mobile-actions { display: flex; gap: 14rpx; margin-top: 20rpx; }
+.topbar-back {
+  display: none;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow: 0 1px 3px rgba(30, 27, 75, 0.05);
+  transition: all 0.2s;
+}
+.topbar-back:hover {
+  border-color: rgba(124, 92, 252, 0.3);
+  background: rgba(124, 92, 252, 0.05);
+}
+.topbar-back:active { transform: scale(0.97); }
+.topbar-back-icon { font-size: 13px; font-weight: 700; color: #7c5cfc; }
+.topbar-back-text { font-size: 13px; font-weight: 600; color: #1e1b4b; }
+@media (min-width: 768px) {
+  .topbar-back { display: flex; }
+}
+
+.mobile-actions { display: none; gap: 14rpx; margin: 20rpx 16rpx 0; }
+@media (max-width: 767px) {
+  .content { padding-top: 12px; }
+  .mobile-actions { display: flex; }
+  .detail-sidebar { display: none; }
+}
 .mobile-actions .btn-primary { flex: 1; height: 88rpx; background: linear-gradient(135deg,#7c5cfc,#4facfe); border-radius: 22rpx; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 28rpx; font-weight: 700; }
 .mobile-actions .btn-outline { flex: 1; height: 88rpx; border: 2rpx solid rgba(248,113,113,0.3); border-radius: 22rpx; display: flex; align-items: center; justify-content: center; color: #f87171; font-size: 28rpx; font-weight: 600; }
 </style>

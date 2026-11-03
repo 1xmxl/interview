@@ -126,6 +126,139 @@ const mockResumes = [
       },
     ],
   },
+  {
+    id: 2,
+    resumeId: 2,
+    coverName: '李娜-产品经理.pdf',
+    originalFilename: '李娜-产品经理简历.pdf',
+    fileType: '.pdf',
+    status: 'PARSED',
+    createdAt: '2026-07-26 10:18:00',
+    skills: [
+      { skillName: '需求分析', proficiency: 'EXPERT' },
+      { skillName: '用户研究', proficiency: 'ADVANCED' },
+      { skillName: 'Axure', proficiency: 'ADVANCED' },
+      { skillName: '数据分析', proficiency: 'INTERMEDIATE' },
+      { skillName: 'SQL', proficiency: 'INTERMEDIATE' },
+      { skillName: '项目管理', proficiency: 'ADVANCED' },
+    ],
+    experiences: [
+      {
+        company: '杭州有赞科技有限公司',
+        position: '高级产品经理',
+        startDate: '2022-06',
+        endDate: '至今',
+        description:
+          '负责商家增长方向的产品规划，主导会员积分体系从 0 到 1 落地，上线 6 个月覆盖 12 万商家，会员复购率提升 18%。',
+      },
+      {
+        company: '上海微盟企业发展有限公司',
+        position: '产品经理',
+        startDate: '2020-07',
+        endDate: '2022-05',
+        description:
+          '负责 SaaS 后台的商品与订单模块，完成 30+ 需求迭代，推动后台页面重构使商家操作路径缩短 40%。',
+      },
+    ],
+    projects: [
+      {
+        projectName: '商家会员增长体系',
+        role: '产品负责人',
+        description:
+          '设计积分、等级、权益三层会员模型，联合研发与运营完成灰度上线，会员月活提升 26%。',
+        technologies: ['会员体系', '增长策略', '数据分析'],
+      },
+      {
+        projectName: 'SaaS 后台重构',
+        role: '核心产品',
+        description:
+          '梳理 200+ 页面信息架构，推动组件化改造，商家任务完成率从 61% 提升至 83%。',
+        technologies: ['信息架构', 'B 端设计', '埋点分析'],
+      },
+    ],
+    educations: [
+      {
+        institution: '浙江大学',
+        degree: '本科',
+        fieldOfStudy: '工商管理',
+        startDate: '2016-09',
+        endDate: '2020-06',
+      },
+    ],
+  },
+  {
+    id: 3,
+    resumeId: 3,
+    coverName: '陈晨-前端开发工程师.pdf',
+    originalFilename: '陈晨-前端开发工程师.pdf',
+    fileType: '.pdf',
+    status: 'PENDING',
+    createdAt: '2026-07-28 09:05:00',
+    skills: [],
+    experiences: [],
+    projects: [],
+    educations: [],
+  },
+  {
+    id: 4,
+    resumeId: 4,
+    coverName: '龚涛-数据分析师.pdf',
+    originalFilename: '龚涛-数据分析师-2026.pdf',
+    fileType: '.pdf',
+    status: 'PARSED',
+    createdAt: '2026-07-29 11:20:00',
+    skills: [
+      { skillName: 'SQL', proficiency: 'EXPERT' },
+      { skillName: 'Python', proficiency: 'ADVANCED' },
+      { skillName: 'Tableau', proficiency: 'ADVANCED' },
+      { skillName: '数据建模', proficiency: 'ADVANCED' },
+      { skillName: 'A/B 测试', proficiency: 'INTERMEDIATE' },
+      { skillName: 'Hive', proficiency: 'INTERMEDIATE' },
+    ],
+    experiences: [
+      {
+        company: '杭州网易数帆科技有限公司',
+        position: '数据分析师',
+        startDate: '2022-03',
+        endDate: '至今',
+        description:
+          '负责用户增长与留存分析，搭建核心指标看板，推动新用户 7 日留存提升 9 个百分点。',
+      },
+      {
+        company: '上海携程商务有限公司',
+        position: '数据分析实习生',
+        startDate: '2021-06',
+        endDate: '2022-02',
+        description:
+          '参与酒店业务经营分析，输出周度经营报告，支撑区域定价策略调整。',
+      },
+    ],
+    projects: [
+      {
+        projectName: '用户流失预警模型',
+        role: '数据负责人',
+        description:
+          '基于 XGBoost 构建流失概率模型，召回率 78%，配合运营触达使月流失率下降 12%。',
+        technologies: ['Python', 'XGBoost', 'Hive'],
+      },
+      {
+        projectName: '经营指标看板',
+        role: '核心开发',
+        description:
+          '整合 6 个业务域数据，搭建 40+ 指标的可视化看板，日均访问 800+ 人次。',
+        technologies: ['Tableau', 'SQL', '数据建模'],
+      },
+    ],
+    educations: [
+      {
+        institution: '东南大学',
+        degree: '本科',
+        fieldOfStudy: '统计学',
+        startDate: '2017-09',
+        endDate: '2021-06',
+      },
+    ],
+  },
 ];
 
 /* ===================== 面试配置 ===================== */

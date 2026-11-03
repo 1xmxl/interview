@@ -78,6 +78,7 @@ function goBack() {
 
 .nav-bar {
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   height: 48px;
@@ -94,12 +95,14 @@ function goBack() {
 .nav-left {
   width: 80rpx;
   display: flex;
+  flex-direction: row;
   align-items: center;
 }
 
 .nav-right {
   width: 80rpx;
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: flex-end;
 }
@@ -111,6 +114,7 @@ function goBack() {
 .nav-center {
   flex: 1;
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
 }
