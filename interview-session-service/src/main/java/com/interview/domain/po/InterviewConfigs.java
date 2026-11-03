@@ -26,13 +26,13 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("interview_configs")
+@TableName(value = "interview_configs", autoResultMap = true)
 @ApiModel(value="InterviewConfigs对象", description="")
 public class InterviewConfigs implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     @TableField("user_id")
@@ -40,6 +40,9 @@ public class InterviewConfigs implements Serializable {
 
     @TableField("name")
     private String name;
+
+    @TableField("description")
+    private String description;
 
     @TableField("interviewer_style")
     private String interviewerStyle;

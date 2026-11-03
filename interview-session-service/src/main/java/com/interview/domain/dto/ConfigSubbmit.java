@@ -15,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ConfigSubbmit {
     private String name;
+    private String description;
     private String interviewerStyle;
     private String difficulty;
     private List<String> targetSkills;

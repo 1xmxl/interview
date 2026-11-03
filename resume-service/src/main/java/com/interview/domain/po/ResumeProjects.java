@@ -25,7 +25,7 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("resume_projects")
+@TableName(value = "resume_projects", autoResultMap = true)
 @ApiModel(value="ResumeProjects对象", description="")
 @Builder
 @NoArgsConstructor
