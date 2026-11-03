@@ -86,6 +86,7 @@ import { ref, computed } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import PageLayout from '@/components/PageLayout.vue'
 import evaluationApi from '@/api/evaluation.js'
+import { USE_MOCK } from '@/mock/index.js'
 let sessionId = ''
 const loading = ref(true), evaluation = ref(null)
 
@@ -116,8 +117,11 @@ onLoad((opt) => { sessionId = opt.sessionId || ''; loadData() })
 const loadData = async () => {
   loading.value = true
   try {
-    // 没有 sessionId 时不查任何会话（避免查到 sessionId=0 的空结果）
-    if (!sessionId) { evaluation.value = null; return }
+    // 演示模式：无 sessionId 时展示演示评估数据；真实后端模式显示空态
+    if (!sessionId) {
+      evaluation.value = USE_MOCK.evaluation ? await evaluationApi.getEval(0) : null
+      return
+    }
     const data = await evaluationApi.getEval(sessionId)
     // 后端未生成报告时返回 {sessionId, answers: []}，视为暂无数据
     evaluation.value = data && (data.reportContent || (data.answers && data.answers.length)) ? data : null
