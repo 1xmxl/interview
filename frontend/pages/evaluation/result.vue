@@ -40,11 +40,16 @@
             <text class="text-body">{{ evaluation.weaknesses }}</text>
           </view>
 
+          <view v-if="reportHtml" class="text-card glass-card">
+            <text class="sec-title">📄 评估报告</text>
+            <rich-text :nodes="reportHtml" />
+          </view>
+
           <view v-if="evaluation.answers && evaluation.answers.length" class="text-card glass-card">
             <text class="sec-title">📝 答题详情</text>
             <view v-for="(a, i) in evaluation.answers" :key="a.answerId" class="answer-row" @tap="goAnswerDetail(a.answerId)">
               <text class="answer-num">{{ i + 1 }}</text>
-              <text class="answer-q">{{ a.question }}</text>
+              <text class="answer-q">第 {{ i + 1 }} 题 · 技术 {{ a.technicalScore ?? '--' }} / 清晰 {{ a.clarityScore ?? '--' }} / 深度 {{ a.depthScore ?? '--' }}</text>
               <text class="answer-go">查看 →</text>
             </view>
           </view>
@@ -83,16 +88,39 @@ import PageLayout from '@/components/PageLayout.vue'
 import evaluationApi from '@/api/evaluation.js'
 let sessionId = ''
 const loading = ref(true), evaluation = ref(null)
-const overallScore = computed(() => { if (!evaluation.value) return '--'; const s = evaluation.value.scores || evaluation.value; const vals = Object.values(s).filter(v => typeof v === 'number'); if (!vals.length) return '--'; return Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) })
+
+// 后端返回 metrics 可能是 JSON 字符串或对象，统一解析
+const parsedMetrics = computed(() => {
+  if (!evaluation.value) return {}
+  const m = evaluation.value.metrics
+  if (!m) return evaluation.value.scores || {}
+  if (typeof m === 'string') {
+    try { return JSON.parse(m) || {} } catch (e) { return {} }
+  }
+  return m
+})
+
+const overallScore = computed(() => {
+  if (!evaluation.value) return '--'
+  const vals = Object.values(parsedMetrics.value)
+    .map((v) => (typeof v === 'number' ? v : parseInt(v)))
+    .filter((v) => !isNaN(v))
+  if (!vals.length) return evaluation.value.overallScore ?? '--'
+  return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)
+})
 const gradeText = computed(() => { const s = parseInt(overallScore.value); if (isNaN(s)) return ''; if (s>=90) return '🏆 优秀'; if (s>=75) return '👍 良好'; if (s>=60) return '📚 一般'; return '💪 需提升' })
-const dimensions = computed(() => { if (!evaluation.value) return []; const scores = evaluation.value.scores || evaluation.value.metrics || {}; const defs = { technical:{label:'技术能力',icon:'⚡',colorClass:'bar-purple'}, communication:{label:'沟通表达',icon:'💬',colorClass:'bar-blue'}, clarity:{label:'逻辑清晰',icon:'🧩',colorClass:'bar-green'}, depth:{label:'思考深度',icon:'🔍',colorClass:'bar-pink'}, problem_solving:{label:'问题解决',icon:'🧠',colorClass:'bar-orange'} }; return Object.entries(scores).map(([k,v])=>({key:k, score:typeof v==='number'?v:parseInt(v)||0, label:defs[k]?.label||k, icon:defs[k]?.icon||'📌', colorClass:defs[k]?.colorClass||'bar-purple'})) })
+const dimensions = computed(() => { const scores = parsedMetrics.value; const defs = { technical:{label:'技术能力',icon:'⚡',colorClass:'bar-purple'}, communication:{label:'沟通表达',icon:'💬',colorClass:'bar-blue'}, clarity:{label:'逻辑清晰',icon:'🧩',colorClass:'bar-green'}, depth:{label:'思考深度',icon:'🔍',colorClass:'bar-pink'}, problem_solving:{label:'问题解决',icon:'🧠',colorClass:'bar-orange'} }; return Object.entries(scores).map(([k,v])=>({key:k, score:typeof v==='number'?v:parseInt(v)||0, label:defs[k]?.label||k, icon:defs[k]?.icon||'📌', colorClass:defs[k]?.colorClass||'bar-purple'})) })
+// 报告正文（HTML 字符串）
+const reportHtml = computed(() => evaluation.value?.reportContent || '')
 onLoad((opt) => { sessionId = opt.sessionId || ''; loadData() })
 const loadData = async () => {
   loading.value = true
   try {
-    // 演示模式：无 sessionId 时展示最近一次评估（数据来自接口层 mock，非页面伪造）
-    // 后端接入后：无 sessionId 应显示空态（EmptyState）
-    evaluation.value = sessionId ? await evaluationApi.getEval(sessionId) : await evaluationApi.getEval(0)
+    // 没有 sessionId 时不查任何会话（避免查到 sessionId=0 的空结果）
+    if (!sessionId) { evaluation.value = null; return }
+    const data = await evaluationApi.getEval(sessionId)
+    // 后端未生成报告时返回 {sessionId, answers: []}，视为暂无数据
+    evaluation.value = data && (data.reportContent || (data.answers && data.answers.length)) ? data : null
   } catch (e) { evaluation.value = null } finally { loading.value = false }
 }
 const goAnswerDetail = (answerId) => {

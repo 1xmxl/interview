@@ -1,3 +1,4 @@
+// 接口返回结构与字段说明见 docs/API_CONTRACT.md
 // 管理端接口：用户列表、角色授权（苍穹权限模型，仅院系管理员可用）
 import { mock, USE_MOCK } from '../mock/index.js'
 import request from './request.js'

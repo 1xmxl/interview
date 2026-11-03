@@ -23,10 +23,30 @@ import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import PageLayout from '@/components/PageLayout.vue'
 import evaluationApi from '@/api/evaluation.js'
+import interviewApi from '@/api/interview.js'
 let sessionId = '', answerId = ''
 const loading = ref(true), detail = ref({})
 onLoad((opt) => { sessionId = opt.sessionId || ''; answerId = opt.answerId || ''; loadData() })
-const loadData = async () => { if (!sessionId || !answerId) { loading.value = false; return }; try { detail.value = await evaluationApi.getAnswerDetail(sessionId, answerId) || {} } catch (e) { detail.value = {} } finally { loading.value = false } }
+const loadData = async () => {
+  if (!sessionId || !answerId) { loading.value = false; return }
+  try {
+    // 后端评估结果只有分数/反馈，题目和答案文本从「问答历史」按 answerId 匹配
+    const [evaluation, history] = await Promise.all([
+      evaluationApi.getAnswerDetail(sessionId, answerId).catch(() => null),
+      interviewApi.getHistory(sessionId).catch(() => []),
+    ])
+    const row = (history || []).find((h) => String(h.answerId) === String(answerId)) || {}
+    detail.value = {
+      ...(evaluation || {}),
+      question: row.questionText || '',
+      answer: row.answerText || '',
+    }
+  } catch (e) {
+    detail.value = {}
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <style scoped>

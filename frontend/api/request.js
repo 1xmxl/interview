@@ -1,3 +1,4 @@
+// 接口返回结构与字段说明见 docs/API_CONTRACT.md
 // api/request.js
 import config from './config.js';
 

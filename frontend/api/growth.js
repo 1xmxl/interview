@@ -1,3 +1,4 @@
+// 接口返回结构与字段说明见 docs/API_CONTRACT.md
 // api/growth.js
 import request from './request.js';
 import { mock, USE_MOCK } from '../mock/index.js';
