@@ -1,6 +1,8 @@
 package com.interview.service.impl;
 
 import client.ResumeClient;
+import client.UserClient;
+import client.support.DataScopeSupport;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.interview.DTO.AnswerEvaluateMessage;
@@ -60,6 +62,7 @@ public class InterviewSessionsServiceImpl extends ServiceImpl<InterviewSessionsM
     private final SessionContextService sessionContextService;
     private final RabbitTemplate rabbitTemplate;
     private final ResumeClient resumeClient;
+    private final UserClient userClient;
 
     @Override
     public Long createSession(SessionSubmit submit) {
@@ -125,13 +128,13 @@ public class InterviewSessionsServiceImpl extends ServiceImpl<InterviewSessionsM
         }
         InterviewConfigs config = getConfig(session.getConfigId());
         ParsedResumeData resume = loadResume(session.getResumeId());
-        int total = resolveTotalQuestions(config.getDifficulty());
 
-        String question = interviewQuestionService.generateFirstQuestion(config, resume, total);
+        // AI 面试官主动开场：打招呼 + 提到看过简历 + 第一个问题
+        String opening = interviewQuestionService.generateOpening(config, resume, currentUserName());
 
         SessionQuestions sq = new SessionQuestions();
         sq.setSessionId(sessionId);
-        sq.setQuestionText(question);
+        sq.setQuestionText(opening);
         sq.setExpectedSkills(joinSkills(config.getTargetSkills()));
         sq.setOrderIndex(0);
         sq.setAskedAt(LocalDateTime.now());
@@ -139,19 +142,20 @@ public class InterviewSessionsServiceImpl extends ServiceImpl<InterviewSessionsM
 
         session.setStatus("IN_PROGRESS");
         session.setStartTime(LocalDateTime.now());
-        session.setTotalQuestions(total);
+        // 不再按难度预设固定题数，totalQuestions 恒为 0（表示不限制）
+        session.setTotalQuestions(0);
         session.setCurrentQuestionIndex(0);
         this.updateById(session);
 
         List<ChatMessage> context = new ArrayList<>();
-        context.add(ChatMessage.builder().role("assistant").content(question).build());
+        context.add(ChatMessage.builder().role("assistant").content(opening).build());
         sessionContextService.saveContext(sessionId, context);
 
-        log.info("面试已开始，sessionId={}, 首题id={}", sessionId, sq.getId());
+        log.info("面试已开始（自然对话模式），sessionId={}, 开场题目id={}", sessionId, sq.getId());
         return StartQuestionVO.builder()
                 .questionId(sq.getId())
-                .question(question)
-                .totalQuestions(total)
+                .question(opening)
+                .totalQuestions(0)
                 .build();
     }
 
@@ -202,25 +206,61 @@ public class InterviewSessionsServiceImpl extends ServiceImpl<InterviewSessionsM
         rabbitTemplate.convertAndSend(RabbitMQConstant.Exchange.INTERVIEW_EXCHANGE,
                 RabbitMQConstant.Key.SPEECH_ANALYSIS_KEY, speechMsg);
 
-        int total = session.getTotalQuestions() == null ? 0 : session.getTotalQuestions();
-        if (currentIndex + 1 >= total) {
-            return NextQuestionVO.builder().hasNext(false).build();
-        }
-
+        // 自然对话：把完整历史交给 AI，由它决定继续追问还是收尾
         InterviewConfigs config = getConfig(session.getConfigId());
         ParsedResumeData resume = loadResume(session.getResumeId());
         List<ChatMessage> context = sessionContextService.getContext(sessionId);
-        String nextQuestion = interviewQuestionService.generateNextQuestion(config, resume, context, currentIndex + 2);
+        int askedCount = currentIndex + 1;
+        String reply = interviewQuestionService.generateReply(config, resume, currentUserName(), context, askedCount);
+
+        boolean ending = interviewQuestionService.isEnding(reply);
+        String visible = interviewQuestionService.stripEndMarker(reply);
+
+        // 硬性兜底：未到最少轮数忽略结束标记；达到最多轮数强制结束
+        if (ending && askedCount < InterviewQuestionService.MIN_ROUNDS) {
+            log.info("AI 想在第 {} 轮结束，但未达到最少 {} 轮，继续提问（sessionId={}）",
+                    askedCount, InterviewQuestionService.MIN_ROUNDS, sessionId);
+            ending = false;
+            // AI 已写了收尾语但被拦下，需要重新追一轮问题，避免出现"无问题"的空回复
+            if (!visible.endsWith("?") && !visible.endsWith("？")) {
+                visible = visible + "\n那我想再了解一下：你在项目中遇到最棘手的技术问题是什么，当时是怎么定位和解决的？";
+            }
+        }
+        if (askedCount >= InterviewQuestionService.MAX_ROUNDS) {
+            log.info("已达到最多 {} 轮，强制结束（sessionId={}）",
+                    InterviewQuestionService.MAX_ROUNDS, sessionId);
+            if (!ending) {
+                // AI 还在提问但已到上限：丢弃问题，只保留收尾语
+                ending = true;
+                visible = "今天我们就聊到这里，感谢你的参与。稍后会有一份完整的评估报告给你，可以针对性地复盘。";
+            } else {
+                visible = visible + "\n今天我们就聊到这里，感谢你的参与，稍后会有一份评估报告给你。";
+            }
+        }
+
+        if (ending) {
+            // AI 判断面试结束：记录结束语，自动收尾并触发报告生成
+            sessionContextService.append(sessionId, ChatMessage.builder().role("assistant").content(visible).build());
+            this.finishSession(sessionId, session);
+            log.info("AI 判断面试结束，sessionId={}, 共 {} 轮问答", sessionId, askedCount);
+            return NextQuestionVO.builder()
+                    .hasNext(false)
+                    .questionId(null)
+                    .aiMessage(visible)
+                    .nextQuestion(visible)
+                    .askedCount(askedCount)
+                    .build();
+        }
 
         SessionQuestions next = new SessionQuestions();
         next.setSessionId(sessionId);
-        next.setQuestionText(nextQuestion);
+        next.setQuestionText(visible);
         next.setExpectedSkills(joinSkills(config.getTargetSkills()));
         next.setOrderIndex(currentIndex + 1);
         next.setAskedAt(LocalDateTime.now());
         sessionQuestionsService.save(next);
 
-        sessionContextService.append(sessionId, ChatMessage.builder().role("assistant").content(nextQuestion).build());
+        sessionContextService.append(sessionId, ChatMessage.builder().role("assistant").content(visible).build());
 
         session.setCurrentQuestionIndex(currentIndex + 1);
         this.updateById(session);
@@ -228,18 +268,16 @@ public class InterviewSessionsServiceImpl extends ServiceImpl<InterviewSessionsM
         return NextQuestionVO.builder()
                 .hasNext(true)
                 .questionId(next.getId())
-                .nextQuestion(nextQuestion)
+                .aiMessage(visible)
+                .nextQuestion(visible)
+                .askedCount(askedCount)
                 .build();
     }
 
-    @Override
-    public void end(Long sessionId) {
-        InterviewSessions session = getOwnSession(sessionId);
+    /** 收尾：置 COMPLETED 并发消息生成报告（AI 自主结束与用户手动结束共用） */
+    private void finishSession(Long sessionId, InterviewSessions session) {
         if ("COMPLETED".equals(session.getStatus()) || "EVALUATED".equals(session.getStatus())) {
             return;
-        }
-        if (!"IN_PROGRESS".equals(session.getStatus())) {
-            throw new RuntimeException("会话状态不允许结束，当前状态: " + session.getStatus());
         }
         Long userId = Long.parseLong(UserContext.getUserId());
         session.setStatus("COMPLETED");
@@ -253,6 +291,24 @@ public class InterviewSessionsServiceImpl extends ServiceImpl<InterviewSessionsM
         rabbitTemplate.convertAndSend(RabbitMQConstant.Exchange.INTERVIEW_EXCHANGE,
                 RabbitMQConstant.Key.REPORT_GENERATE_KEY, msg);
         log.info("已发送报告生成消息，sessionId={}", sessionId);
+    }
+
+    /** 当前用户称呼（优先真实姓名，退回用户名） */
+    private String currentUserName() {
+        String name = UserContext.getUsername();
+        return (name == null || name.isBlank()) ? "候选人" : name;
+    }
+
+    @Override
+    public void end(Long sessionId) {
+        InterviewSessions session = getOwnSession(sessionId);
+        if ("COMPLETED".equals(session.getStatus()) || "EVALUATED".equals(session.getStatus())) {
+            return;
+        }
+        if (!"IN_PROGRESS".equals(session.getStatus())) {
+            throw new RuntimeException("会话状态不允许结束，当前状态: " + session.getStatus());
+        }
+        finishSession(sessionId, session);
     }
 
     @Override
@@ -289,13 +345,14 @@ public class InterviewSessionsServiceImpl extends ServiceImpl<InterviewSessionsM
 
     @Override
     public SessionStatsDTO getStats() {
-        Long userId = Long.parseLong(UserContext.getUserId());
+        // 数据权限：学生=自己；辅导员/管理员=本院；HR=全部
+        List<Long> userIds = DataScopeSupport.visibleUserIds(userClient);
         Long interviewCount = this.lambdaQuery()
-                .eq(InterviewSessions::getUserId, userId)
+                .in(InterviewSessions::getUserId, userIds)
                 .count();
         BigDecimal avgScore = null;
         List<InterviewSessions> sessions = this.lambdaQuery()
-                .eq(InterviewSessions::getUserId, userId)
+                .in(InterviewSessions::getUserId, userIds)
                 .list();
         if (sessions != null && !sessions.isEmpty()) {
             List<Long> sessionIds = sessions.stream()
@@ -362,17 +419,6 @@ public class InterviewSessionsServiceImpl extends ServiceImpl<InterviewSessionsM
                 .eq(SessionQuestions::getSessionId, sessionId)
                 .eq(SessionQuestions::getOrderIndex, orderIndex)
                 .one();
-    }
-
-    private int resolveTotalQuestions(String difficulty) {
-        if (difficulty == null) {
-            return 5;
-        }
-        return switch (difficulty.toUpperCase()) {
-            case "EASY" -> 3;
-            case "HARD" -> 8;
-            default -> 5;
-        };
     }
 
     private String joinSkills(List<String> skills) {
